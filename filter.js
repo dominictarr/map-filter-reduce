@@ -1,4 +1,4 @@
-
+'use strict'
 function isString(s) { return 'string' === typeof s }
 
 function isNumber(n) { return !isNaN(+n) }
@@ -18,7 +18,7 @@ function has(o, k) {
 function isExact (v) {
   if(isBasic(v)) return true
   if(isArray(v))
-    return !find(v, isRange)
+    return v.every(isExact)
   return isObject(v) && has(v, '$eq')
 }
 
@@ -29,6 +29,7 @@ function isLtgt (v) {
 function isRange (v) {
   if(!isObject(v)) return false
   if(isString(v.$prefix)) return true
+  if(isArray(v)) return find(v, isRange)
   return isLtgt(v)
 }
 
@@ -45,7 +46,7 @@ function lower (v) {
     if(has(v, '$lt')) return v.$lt
     if(has(v, '$lte')) return v.$lte
   }
-  if(isArray(v)) return a.map(lower)
+  if(isArray(v)) return v.map(lower)
 }
 
 function upper (v) {
@@ -55,7 +56,7 @@ function upper (v) {
     if(has(v, '$gt')) return v.$gt
     if(has(v, '$gte')) return v.$gte
   }
-  if(isArray(v)) return a.map(upper)
+  if(isArray(v)) return v.map(upper)
 }
 
 function filter(q, v) {
@@ -91,12 +92,10 @@ function createFilter (q) {
   }
 }
 
+exports = module.exports = createFilter
 
-module.exports = createFilter
-
-
-
-
-
-
+exports.isExact = isExact
+exports.isRange = isRange
+exports.lower = lower
+exports.upper = upper
 
