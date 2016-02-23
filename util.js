@@ -59,14 +59,30 @@ function upper (v) {
   if(isArray(v)) return v.map(upper)
 }
 
+function get(obj, path) {
+  if(isString(path)) return obj[path]
+  if(isArray(path)) {
+    for(var i = 0; i < path.length; i++) {
+      if(obj == null) return undefined
+      obj = obj[path[i]]
+    }
+    return obj
+  }
+  if(path === true) return obj
+  return undefined
+}
+
 exports.isString = isString
+exports.isNumber = isNumber
 exports.isBasic = isBasic
 exports.isArray = isArray
 exports.isObject = isObject
 exports.isRange = isRange
 exports.isExact = isExact
 exports.isLtgt = isLtgt
+
 exports.has = has
+exports.get = get
 
 exports.upper = upper
 exports.lower = lower
