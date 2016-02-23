@@ -9,15 +9,11 @@ function isSimple(query) {
 }
 
 function lookup(reduce, path) {
+  if(path === true) return reduce
   return function (a, b) {
     return reduce(a, u.get(b, path))
   }
 }
-
-//TODO: the below code is a bit ugly, because it's
-//coupled to the DSL - it would be more elegant to rewrite
-//interms of functions. functions that create reduce functions
-//and take reduce functions as arguments "lookup" is a simple example...
 
 function map(obj, iter, o) {
   o = o || {}
@@ -36,22 +32,14 @@ function multi(obj) {
   }
 }
 
-function makeMulti (query) {
-  return multi(map(query, function (q, k) {
-    if(k == '$group') return undefined
-    var r = isSimple(query[k]), path = q[r]
-    return lookup(simple[r], path === true ? k : path)
-  }))
-}
-
-function auto (query, key) {
-  var k
-
-  if(k=isSimple(query)) {
-    console.log('simple', k, query[k])
-    return lookup(simple[k], query[k])
-  }
-  else if(u.isObject(query)) return makeMulti(query)
+function make (query) {
+  var k = isSimple(query)
+  if(k) return lookup(simple[k], query[k])
+  else if(u.isObject(query))
+    return multi(map(query, function (q, k) {
+      if(k == '$group') return undefined
+      return make(query[k])
+    }))
 }
 
 function each(list, iter) {
@@ -75,6 +63,5 @@ function group (g, reduce) {
 }
 
 module.exports = function reduce (query) {
-  return query.$group ? group(query.$group, auto(query)) : auto(query)
+  return query.$group ? group(query.$group, make(query)) : make(query)
 }
-
