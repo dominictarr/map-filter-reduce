@@ -1,5 +1,5 @@
 var u = require('./util')
-
+var map = u.map
 var simple = require('./basic')
 
 function isFunction (f) { return 'function' === typeof f }
@@ -13,15 +13,6 @@ function lookup(reduce, path) {
   return function (a, b) {
     return reduce(a, u.get(b, path))
   }
-}
-
-function map(obj, iter, o) {
-  o = o || {}
-  for(var k in obj) {
-    var v = iter(obj[k], k, obj)
-    if(v !== undefined) o[k] = v
-  }
-  return o
 }
 
 function multi(obj) {
@@ -65,3 +56,4 @@ function group (g, reduce) {
 module.exports = function reduce (query) {
   return query.$group ? group(query.$group, make(query)) : make(query)
 }
+

@@ -72,6 +72,16 @@ function get(obj, path) {
   return undefined
 }
 
+function map(obj, iter, o) {
+  if(Array.isArray(obj)) return obj.map(iter)
+  o = o || {}
+  for(var k in obj) {
+    var v = iter(obj[k], k, obj)
+    if(v !== undefined) o[k] = v
+  }
+  return o
+}
+
 exports.isString = isString
 exports.isNumber = isNumber
 exports.isBasic = isBasic
@@ -83,6 +93,7 @@ exports.isLtgt = isLtgt
 
 exports.has = has
 exports.get = get
+exports.map = map
 
 exports.upper = upper
 exports.lower = lower
