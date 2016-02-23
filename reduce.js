@@ -1,112 +1,80 @@
 var u = require('./util')
 
-//{
-//  $group: ['dest', ['rel', 1]]
-//  key: {$count: true}
-//  field: {$sum:true}
-//  $collect: field,
-//  $first, $last, $max, $min
-//}
-
-var simple = {
-  $count:
-    function (a, b) {
-      if(b === undefined) return (a||0)
-      return (a||0)+1
-    },
-  $sum:
-    function (a, b) {
-      if(b === undefined) return (a||0)
-      return (a||0)+(b||0)
-    },
-  $max:
-    function (a, b) {
-      if(b === undefined) a
-      if(a === undefined) return b
-      return Math.max(a, b)
-    },
-  $min:
-    function (a, b) {
-      if(b === undefined) a
-      if(a === undefined) return b
-      return Math.min(a, b)
-    },
-  $collect:
-    function (a, b) {
-      if(!a) a = a || []
-      if(!u.isArray(a)) a = [a]
-      if(b == undefined) return a
-      a.push(b)
-      return a
-    }
-}
-
-function isSimple(query) {
-  for(var k in simple) {
-    if(u.has(query, k)) return k
-  }
-}
-
+var simple = require('./basic')
 
 function isFunction (f) { return 'function' === typeof f }
 
-function nonGroup (query) {
-  var k
-  if(k=isSimple(query)) return simple[k]
-  else if(u.isObject(query)) {
-    var o = {}
-    for(var k in query) (function (k, q, r) {
-      if(k == '$group') return
-      var reducer = simple[r]
-      if(!isFunction(reducer)) {
-        throw new Error('!reducer')
-      }
-      var path = q[r]
-      if(path === true) path = k
-      o[k] = function (a, b) {
-        return reducer(a, u.get(b, path))
-      }
-    })(k, query[k], isSimple(query[k]))
+function isSimple(query) {
+  for(var k in simple) if(u.has(query, k)) return k
+}
 
-    var first = true
-    return function reduce (a, b, i) {
-      a = a || {}
-      for(var k in o) {
-        a[k] = o[k](a[k], b)
-      }
-      return a
-    }
+function lookup(reduce, path) {
+  return function (a, b) {
+    return reduce(a, u.get(b, path))
   }
+}
+
+//TODO: the below code is a bit ugly, because it's
+//coupled to the DSL - it would be more elegant to rewrite
+//interms of functions. functions that create reduce functions
+//and take reduce functions as arguments "lookup" is a simple example...
+
+function map(obj, iter, o) {
+  o = o || {}
+  for(var k in obj) {
+    var v = iter(obj[k], k, obj)
+    if(v !== undefined) o[k] = v
+  }
+  return o
+}
+
+function multi(obj) {
+  return function (a, b) {
+    return map(obj, function (reduce, k) {
+      return reduce(a[k], b)
+    }, a = a || {})
+  }
+}
+
+function makeMulti (query) {
+  return multi(map(query, function (q, k) {
+    if(k == '$group') return undefined
+    var r = isSimple(query[k]), path = q[r]
+    return lookup(simple[r], path === true ? k : path)
+  }))
+}
+
+function auto (query, key) {
+  var k
+
+  if(k=isSimple(query)) {
+    console.log('simple', k, query[k])
+    return lookup(simple[k], query[k])
+  }
+  else if(u.isObject(query)) return makeMulti(query)
 }
 
 function each(list, iter) {
   if(u.isString(list)) return iter(list)
   for(var i = 0; i < list.length; i++)
-    iter(list[i])
+    iter(list[i], (list.length - i - 1))
 }
 
-function group (query) {
-  var g = query.$group
-  var reduce = nonGroup(query)
+//instead of taking the query,
+//this should take a path, and a reduce function.
+function group (g, reduce) {
   return function (a, b) {
-    var k = u.get(b, g)
-    a = a || {}
-    a[k] = reduce(a[k], b)
+    var A = a = a || {}
+    each(g, function (k, notLast) {
+      var v = u.get(b, k)
+      A[v] = !notLast ? reduce(A[v], b) : A[v] || {}
+      A = A[v]
+    })
     return a
   }
 }
 
 module.exports = function reduce (query) {
-  return query.$group ? group(query) : nonGroup(query)
+  return query.$group ? group(query.$group, auto(query)) : auto(query)
 }
-
-
-
-
-
-
-
-
-
-
 
