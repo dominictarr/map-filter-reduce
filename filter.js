@@ -55,20 +55,25 @@ function all (q) {
   }
 }
 
-function make (q) {
-  if(isExact(q))       return exact(q)
-  if(has(q, '$prefix')) return prefix(q.$prefix)
-  if(isLtgt(q))        return ltgt(q)
-  if(u.isArray(q) || u.isObject(q))
-                       return all(map(q, make))
+function absent (v) {
+  return v == null
 }
 
-exports = module.exports = make
+function never () { return false }
 
+function make (q) {
+  return (
+    isExact(q)        ? exact(q)
+  : has(q, '$prefix') ? prefix(q.$prefix)
+  : isLtgt(q)         ? ltgt(q)
+  : u.isObject(q)
+    || u.isArray(q)   ? all(map(q, make))
+  : isNullish(q)      ? absent
+  :                     never
+  )
+}
 
-
-
-
+module.exports = make
 
 
 
