@@ -24,11 +24,31 @@ tape('objects', function (t) {
     objs.reduce(R({
       maxFoo: {$max: 'foo'},
       foo: {$sum: 'foo'},
-      bar: {$sum: true}
+      bar: {$sum: 'bar'}
     }), null),
     {maxFoo: 10, foo: 3, bar: 15}
   )
+
   t.end()
+})
+
+tape('collect', function (t) {
+  t.deepEqual(
+    objs.reduce(R({
+      primes: {$collect: 'baz'}
+    }), null),
+    {primes: [false, true, true, false, true]}
+  )
+
+  t.deepEqual(
+    objs.reduce(R({
+      $collect: 'baz'
+    }), null),
+    [false, true, true, false, true]
+  )
+
+  t.end()
+
 })
 
 tape('group', function (t) {
@@ -42,14 +62,14 @@ tape('group', function (t) {
 
   t.deepEqual(
     objs.reduce(R({
-      $group: 'baz', foo: {$max:true}, bar: {$sum: true}
+      $group: 'baz', foo: {$max:'foo'}, bar: {$sum: 'bar'}
     }), null),
     {"true": {foo: 10, bar: 10}, "false": {foo: 0, bar: 5}}
   )
 
   t.deepEqual(
     objs.reduce(R({
-      $group: 'baz', foo: {$max:true}, bar: {$collect: true}
+      $group: 'baz', foo: {$max:'foo'}, bar: {$collect: 'bar'}
     }), null),
     {"true": {foo: 10, bar: [2,3,5]}, "false": {foo: 0, bar: [1,4]}}
   )
@@ -93,5 +113,4 @@ tape('more groups', function (t) {
   )
   t.end()
 })
-
 
