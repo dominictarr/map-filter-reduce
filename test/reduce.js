@@ -114,3 +114,16 @@ tape('more groups', function (t) {
   t.end()
 })
 
+tape('nested groups', function (t) {
+  t.deepEqual(
+    groups.reduce(R({
+      $group: 'country',
+      population: {$count: true},
+      housing: {$group: 'house', $count: true}
+    }), null),
+    { US: { population: 3, housing: { apartment: 2, house: 1 } },
+      NZ: { population: 2, housing: { house: 1, sailboat: 1 } } }
+  )
+  t.end()
+})
+
