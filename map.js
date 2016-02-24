@@ -1,29 +1,49 @@
 var u = require('./util')
+var map = u.map
 
-module.exports = function map (q, v) {
-  if(v === undefined) return v
-  if(true === q) return v
-  if(v === null) return undefined
-  if(u.isString(q) || u.isNumber(q)) return v[q]
-  if(u.isArray(q))
-    return q.length > 1 ? map(q.slice(1), v[q[0]]) : map(q[0], v)
-  if(u.isObject(q)) {
-    var o = {}, match = false
-    for(var k in q) {
-      var _v = q[k] === true ? v[k] : map(q[k], v)
-      if(_v !== undefined) {
-        o[k] = _v; match = true
-      }
-    }
-    return match ? o : undefined
+function id (v, k) {
+  return k ? v[k] : v
+}
+
+function isNull (n) {
+  return n == null
+}
+
+function key(q) {
+  return function (v) {
+    if(isNull(v)) return undefined
+    return v[q]
   }
 }
 
+function path (q) {
+  return q.reduce(function (map1, map2) {
+    return function (v) { return map2(map1(v)) }
+  })
+}
 
+function notEmpty (o) {
+  for(var k in o) return o
+  return undefined
+}
 
+function obj (q) {
+  return function (v) {
+    if(isNull(v)) return undefined
+    return notEmpty(map(q, function (fn, k, o) {
+      return fn(v, k)
+    }))
+  }
+}
 
+function make(q) {
+  if(true === q) return id
+  if(isNull(q)) return isNull
+  if(u.isString(q) || u.isNumber(q)) return key(q)
+  if(u.isArray(q)) return path(q.map(make))
+  if(u.isObject(q)) return obj(map(q, make))
+  throw new Error('no match - should never mappen')
+}
 
-
-
-
+module.exports = make
 
