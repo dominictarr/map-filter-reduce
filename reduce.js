@@ -23,16 +23,6 @@ function multi(obj) {
   }
 }
 
-function make (query) {
-  var k = isSimple(query)
-  if(k) return lookup(simple[k], query[k])
-  else if(u.isObject(query))
-    return multi(map(query, function (q, k) {
-      if(k == '$group') return undefined
-      return make(query[k])
-    }))
-}
-
 function each(list, iter) {
   if(u.isString(list)) return iter(list)
   for(var i = 0; i < list.length; i++)
@@ -53,7 +43,21 @@ function group (g, reduce) {
   }
 }
 
-module.exports = function reduce (query) {
-  return query.$group ? group(query.$group, make(query)) : make(query)
+function make (query) {
+  var k = isSimple(query)
+  if(k) return lookup(simple[k], query[k])
+  else if(u.isObject(query))
+    return multi(map(query, function (q, k) {
+      if(k == '$group') return undefined
+      return gmake(query[k])
+    }))
 }
+
+function gmake (query) {
+ return query.$group ? group(query.$group, make(query)) : make(query)
+}
+
+module.exports = gmake
+
+
 
