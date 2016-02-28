@@ -1,5 +1,5 @@
 var u = require('./util')
-var isExact = u.isExact
+var isBasic = u.isBasic
 var isRange = u.isRange
 var isString = u.isString
 var isLtgt = u.isLtgt
@@ -8,6 +8,7 @@ var has = u.has
 var map = u.map
 
 function exact(q) {
+  console.log('Exact', q)
   return function (v) {
     return q === v
   }
@@ -62,8 +63,9 @@ function absent (v) {
 function never () { return false }
 
 function make (q) {
+  console.log('Make', q)
   return (
-    isExact(q)        ? exact(q)
+    isBasic(q)        ? exact(q)
   : has(q, '$prefix') ? prefix(q.$prefix)
   : isLtgt(q)         ? ltgt(q)
   : u.isObject(q)
@@ -74,6 +76,7 @@ function make (q) {
 }
 
 module.exports = make
+
 
 
 
