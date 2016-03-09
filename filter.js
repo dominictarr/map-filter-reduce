@@ -4,18 +4,29 @@ var isRange = u.isRange
 var isString = u.isString
 var isLtgt = u.isLtgt
 var isObject = u.isObject
+var isArray = u.isArray
 var has = u.has
 var map = u.map
 
 function exact(q) {
-  console.log('Exact', q)
   return function (v) {
     return q === v
   }
 }
 function prefix(p) {
-  return function (v) {
-    return isString(v) && v.substring(0, p.length) === p
+  if(isString(p))
+    return function (v) {
+      return isString(v) && v.substring(0, p.length) === p
+    }
+  if(isArray(p)) {
+    if(!p.every(isBasic))
+      throw new Error('{$prefix: array} must have exact elements in the array')
+    return function (v) {
+      if(!isArray(v) || v.length < p.length) return false
+      for(var i = 0; i < p.length; i++)
+        if(v[i] !== p[i]) return false
+      return true
+    }
   }
 }
 
@@ -63,7 +74,6 @@ function absent (v) {
 function never () { return false }
 
 function make (q) {
-  console.log('Make', q)
   return (
     isBasic(q)        ? exact(q)
   : has(q, '$prefix') ? prefix(q.$prefix)
@@ -76,7 +86,4 @@ function make (q) {
 }
 
 module.exports = make
-
-
-
 
