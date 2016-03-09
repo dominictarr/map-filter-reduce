@@ -42,6 +42,7 @@ function find (ary, test) {
 function lower (v) {
   if(isBasic(v)) return v
   if(isObject(v)) {
+    if(isArray(v.$prefix)) return v.$prefix.concat(exports.HI)
     if(isString(v.$prefix)) return v.$prefix
     if(has(v, '$lt')) return v.$lt
     if(has(v, '$lte')) return v.$lte
@@ -52,6 +53,7 @@ function lower (v) {
 function upper (v) {
   if(isBasic(v)) return v
   if(isObject(v)) {
+    if(isArray(v.$prefix)) return v.$prefix.concat(exports.LO)
     if(isString(v.$prefix)) return v.$prefix+'\uffff'
     if(has(v, '$gt')) return v.$gt
     if(has(v, '$gte')) return v.$gte
