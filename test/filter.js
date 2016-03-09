@@ -9,7 +9,8 @@ var data = [
   {a: {b: 'okay'}},
   {a: {b: 'notokay'}},
   {source: 'a', dest: 'b', rel: ['name', '@bob']},
-  {source: 'b', dest: 'a', rel: ['name', '@alice']}
+  {source: 'b', dest: 'a', rel: ['name', '@alice']},
+  {source: 'b', dest: 'a', rel: ['contact', true, false]}
 ]
 
 var queries = [
@@ -18,7 +19,8 @@ var queries = [
   {$prefix: 'str'},
   {a: {b: {$gt:'ok'}}},
   {rel: ['name', {$prefix: '@'}]},
-  {rel: ['name', {$prefix: '@b'}]}
+  {rel: ['name', {$prefix: '@b'}]},
+  {rel: {$prefix: ['contact', true]}}
 ]
 
 var expected = [
@@ -30,7 +32,8 @@ var expected = [
     {source: 'a', dest: 'b', rel: ['name', '@bob']},
     {source: 'b', dest: 'a', rel: ['name', '@alice']}
   ],
-  [{source: 'a', dest: 'b', rel: ['name', '@bob']}]
+  [{source: 'a', dest: 'b', rel: ['name', '@bob']}],
+  [{source: 'b', dest: 'a', rel: ['contact', true, false]}]
 ]
 
 tape('okay: true', function (t) {
@@ -49,4 +52,5 @@ queries.forEach(function (q, i) {
     t.end()
   })
 })
+
 
