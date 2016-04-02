@@ -53,7 +53,7 @@ matches all strings that equal `"okay"`
 
 `$prefix` operator matches strings that start with a given string.
 ``` js
-{$prefix: 'o'}
+{$filter: {$prefix: 'o'}}
 ```
 this will match `"okay"` `"ok"` `"oh no"`, etc.
 
@@ -63,7 +63,7 @@ match values that are greater than, less than, greater than or equal, or less th
 A greater operator and a lesser operator may be combined into one comparison.
 
 ``` js
-{$gte: 0, $lt: 1}
+{$filter: {$gte: 0, $lt: 1}}
 ```
 will filter numbers from 0 up to but not including 1.
 
@@ -73,15 +73,19 @@ an object is used to filter objects that have the same properties.
 an object is combined with other operators that apply to the keys.
 
 ``` js
-{name: {$prefix: 'bob'}, age: {$gt: 10}}
+{$filter: {name: {$prefix: 'bob'}, age: {$gt: 10}}}
 ```
 select "bob", "bobby", and "bobalobadingdog", if their age is greater than 10.
 
 #### arrays
 
+arrays are used treated somewhat like strings, in that you can also
+use the `$prefix` and `$gt, $lt, $gte, $lte` operators.
+
+
 arrays are like objects, but their keys are compared in order from left to right.
 
-TODO: implement prefix and ltgt ranges on arrays.
+{$filter: {$prefix: ['okay']}}
 
 ### map
 
@@ -92,15 +96,18 @@ lets say, we have a nested object incoming, but we just want to pluck off
 the a nested name field.
 
 ``` js
-{name: ['value', 'name']}
+{$map: {name: ['value', 'name']}}
 ```
+
+if the input was `{key: k, value: {foo: blah, name: 'bob'}}`
+the output would just be `'bob'`.
 
 #### key: strings, numbers
 
 strings and numbers are used to get keys off the input.
 
 ``` js
-'value'
+{$map: 'value'}
 ```
 would return the value property of the input, and drop the rest.
 use numbers (integers) if the input will be an array.
@@ -115,7 +122,7 @@ the keys in the object do not need to be the same as in the input,
 since the values will map to which keys to operate on from the input.
 
 ``` js
-{foo: 'bar', bar: 'foo'}
+{$map: {foo: 'bar', bar: 'foo'}}
 ```
 transform the input stream into a stream with `foo` and `bar` keys switched,
 and any other keys dropped.
@@ -126,20 +133,34 @@ arrays are used to lookup deep into an object. they are analogous to useing
 chaining dots in javascript.
 
 ``` js
-['value', 'name']
+{$map: ['value', 'name']}
 ```
 get the value property, and then get the name property off that.
+
+#### wildcard
+
+to get _everything_ use `true`
+
+``` js
+{$map: true}
+```
+say, we have an object with _many_ keys, and we want to reduce that to just
+`timestamp` and then put everything under `value`
+
+``` js
+{$map: {timestamp: 'timestamp', value: true}}
+```
 
 ### reduce
 
 reduce is used to aggregate many values into a representative value.
-`count`, `sum`, `min`, `max`, and `group` are all reduces.
+`count`, `sum`, `min`, `max`, are all reduces.
 
 #### count
 
 count how many items are in the input
 ``` js
-{$count: true}
+{$reduce: {$count: true}}
 ```
 
 #### sum
@@ -149,7 +170,7 @@ sums can be applied to paths, or strings to get the values to sum.
 
 add up all the values for `value.age`
 ``` js
-{$sum: ['value', 'age']}
+{$reduce: {$sum: ['value', 'age']}}
 ```
 
 #### min, max
@@ -157,7 +178,7 @@ add up all the values for `value.age`
 get the minimum or maximum for a value.
 
 ``` js
-{$min: ['value', 'age']}
+{$reduce: {$min: ['value', 'age']}}
 ```
 
 #### collect
@@ -166,7 +187,7 @@ get all values an put them into an array.
 
 get all values for `foo`
 ``` js
-{$collect: 'foo'}
+{$reduce: {$collect: 'foo'}}
 ```
 this may produce a large value if there are many items in the input stream.
 
@@ -176,84 +197,38 @@ to apply multiple reduce functions, put them in an object with
 key names.
 
 ``` js
-{
+{$reduce: {
   youngest: {$min: ['value','age']},
   oldest: {$max: ['value', 'age']}
-}
+}}
 ```
-#### group
+#### groups
 
-group the input into sections. group is used with other reducers,
-first group splits the input into groups, and then runs the reducers
-on the elements in that group.
+To group, use the other reduce functions
+along side path expressions, as used under `$map`
 
+In the following query, 
 ``` js
-{
-  $group: 'country',
-  $count: true
-}
+{$reduce: {
+  country: 'country',
+  population: {$count: true}
+}}
 ```
-count items per country. will give a single output, that is an object
-where each value for `country` in the input becomes a key.
+count items per country. Will give a stream of items each with
+a `{country, population}` fields.
 
-say, if the inputs values for country where `nz, us, de, au` then the
-output might be:
-
-``` js
-{
-  nz: 2,
-  us: 4,
-  de: 2,
-  au: 1
-}
-```
 group can be applied to more than one field by using an array.
 
 ``` js
-{$group: ['country', 'city'], $count: true}
+{$reduce: {country: 'country', city: 'city', population: {$count: true}}}
 ```
 
-would return an object nested to two levels, by country, then city
+This would return a sequence of {country, city, population} tripples.
 
-Note that in group, arrays are used for a list of groups,
-instead of paths, to get a path, use an array inside an array!
-
+Note that, like in `$map` arrays can be used to drill deep into
+an object.
 ``` js
-{$group: [['value', 'name']], $count: true}
-```
-
-since groups are also just reduces, they can be nested by using
-object keys. this lets us apply aggregation on different levels.
-
-``` js
-{$group: 'country',
-  count: {$count: true},
-  city: {
-    $group: [['country', 'city']],
-    $count: true
-  }
-}
-```
-
-the output might look like this:
-
-``` js
-{
-  nz: {
-    count: 2,
-    city: {akl: 1, wlg: 1},
-  },
-  us: {
-    count: 4,
-    city: {nyc: 1, aus: 1, sfo: 1, pdx: 1}
-  },
-  de:  {
-    count: 2, city: {ber: 2}
-  },
-  au: {
-    count: 1, city: {syd: 1}
-  }
-}
+{$reduce: {name: ['value', 'name'], posts: {$count: true}}}
 ```
 
 TODO: group by time ranges (day, month, week, year, etc)
@@ -261,9 +236,4 @@ TODO: group by time ranges (day, month, week, year, etc)
 ## License
 
 MIT
-
-
-
-
-
 
