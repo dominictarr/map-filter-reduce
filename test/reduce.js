@@ -55,11 +55,14 @@ tape('group', function (t) {
 
   t.deepEqual(
     objs.reduce(R({
-      $group: 'baz', $count: true
+      baz: 'baz', count: {$count: true}
     }), null),
-    {"true": 3, "false": 2}
+    [
+      {baz: false, count: 2},
+      {baz: true, count: 3}
+    ]
   )
-
+  return t.end()
   t.deepEqual(
     objs.reduce(R({
       $group: 'baz', foo: {$max:'foo'}, bar: {$sum: 'bar'}
@@ -79,51 +82,40 @@ tape('group', function (t) {
 
 var groups = [
   {
-    name: 'pfraze', country: 'US', house: 'apartment'
+    name: 'pfraze', country: 'US', dwelling: 'apartment'
   },
   {
-    name: 'substack', country: 'US', house: 'house'
+    name: 'substack', country: 'US', dwelling: 'house'
   },
   {
-    name: 'mix', country: 'NZ', house: 'house'
+    name: 'mix', country: 'NZ', dwelling: 'house'
   },
   {
-    name: 'du5t', country: 'US', house: 'apartment'
+    name: 'du5t', country: 'US', dwelling: 'apartment'
   },
   {
-    name: 'dominic', country: 'NZ', house: 'sailboat'
+    name: 'dominic', country: 'NZ', dwelling: 'sailboat'
   }
 ]
 
 tape('more groups', function (t) {
   t.deepEqual(groups.reduce(R({
-      $group: ['country', 'house'],
-      $collect: 'name'
-    }), null),
+      country: 'country', dwelling: 'dwelling', people: {$collect: 'name'}
+    }), null), [
     {
-      US: {
-        apartment: ['pfraze', 'du5t'],
-        house: ['substack']
-      },
-      NZ: {
-        house: ['mix'],
-        sailboat: ['dominic']
-      }
+      country: 'NZ', dwelling: 'house', people: ['mix']
+    },
+    {
+      country: 'NZ', dwelling: 'sailboat', people: ['dominic']
+    },
+    {
+      country: 'US', dwelling: 'apartment', people: ['pfraze', 'du5t']
+    },
+    {
+      country: 'US', dwelling: 'house', people: ['substack']
     }
-  )
+  ])
   t.end()
 })
 
-tape('nested groups', function (t) {
-  t.deepEqual(
-    groups.reduce(R({
-      $group: 'country',
-      population: {$count: true},
-      housing: {$group: 'house', $count: true}
-    }), null),
-    { US: { population: 3, housing: { apartment: 2, house: 1 } },
-      NZ: { population: 2, housing: { house: 1, sailboat: 1 } } }
-  )
-  t.end()
-})
 
