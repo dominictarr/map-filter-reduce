@@ -84,6 +84,11 @@ function map(obj, iter, o) {
   return o
 }
 
+function each(obj, iter) {
+  if(Array.isArray(obj)) return obj.forEach(iter)
+  for(var k in obj) iter(obj[k], k, obj)
+}
+
 function project (value, map, isObj) {
   isObj = isObj || isObject
   if(!isObj(value))
@@ -100,8 +105,18 @@ function project (value, map, isObj) {
 }
 
 //get all paths within an object
-function paths (value, test) {
-
+//this can probably be optimized to create less arrays!
+function paths (object, test) {
+  var p = []
+  for(var key in object) {
+    var value = object[key]
+    if(test(value)) p.push(key)
+    else if(isObject(value))
+      p = p.concat(paths(value, test).map(function (path) {
+        return [key].concat(path)
+      }))
+  }
+  return p
 }
 
 exports.isString = isString
@@ -117,11 +132,12 @@ exports.has     = has
 exports.get     = get
 exports.map     = map
 exports.project = project
+exports.paths   = paths
+exports.each    = each
 
 exports.upper = upper
 exports.lower = lower
 
 exports.HI = undefined
 exports.LO = null
-
 
