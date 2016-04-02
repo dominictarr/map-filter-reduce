@@ -86,7 +86,10 @@ function map(obj, iter, o) {
 
 function each(obj, iter) {
   if(Array.isArray(obj)) return obj.forEach(iter)
-  for(var k in obj) iter(obj[k], k, obj)
+  else if(isObject(obj))
+    for(var k in obj) iter(obj[k], k, obj)
+  else
+    iter(obj)
 }
 
 function project (value, map, isObj) {
