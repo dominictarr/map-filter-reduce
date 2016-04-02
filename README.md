@@ -207,7 +207,7 @@ key names.
 To group, use the other reduce functions
 along side path expressions, as used under `$map`
 
-In the following query, 
+In the following query,
 ``` js
 {$reduce: {
   country: 'country',
@@ -217,13 +217,14 @@ In the following query,
 count items per country. Will give a stream of items each with
 a `{country, population}` fields.
 
-group can be applied to more than one field by using an array.
-
+Sometimes, it's easier to work with an array or stream of the groups,
+but sometimes we'd rather have elements grouped into an object.
+For that we use the `$group` operator.
 ``` js
-{$reduce: {country: 'country', city: 'city', population: {$count: true}}}
+{$reduce: {$group: ['country', 'city'], $reduce: {$count: true}}}
 ```
 
-This would return a sequence of {country, city, population} tripples.
+This would return a object, with the shape `{<country>:{<city>: <population>}}`.
 
 Note that, like in `$map` arrays can be used to drill deep into
 an object.
@@ -236,4 +237,7 @@ TODO: group by time ranges (day, month, week, year, etc)
 ## License
 
 MIT
+
+
+
 
