@@ -1,5 +1,6 @@
 var tape = require('tape')
 var project = require('../util').project
+var paths = require('../util').paths
 
 var input = {
   foo: {bar: true, baz: false},
@@ -36,6 +37,7 @@ tape('simple', function (t) {
   t.end()
 })
 
-
-
-
+tape('paths', function (t) {
+  t.deepEqual(paths(input, function (e) { return e===true }), [['foo', 'bar'], ['foofoo', 'okay']])
+  t.end()
+})
