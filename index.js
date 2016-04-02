@@ -45,8 +45,8 @@ exports.map = function (q) {
 exports.reduce = function (q, cb) {
   if(cb)
     return pull.reduce(reduce(q), null, cb)
-  return SinkThrough(function (cb) {
+  return pull(SinkThrough(function (cb) {
     return pull.reduce(reduce(q), null, cb)
-  })
+  }), pull.flatten())
 }
 
