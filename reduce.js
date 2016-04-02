@@ -24,12 +24,6 @@ function multi(obj) {
   }
 }
 
-function each(list, iter) {
-  if(u.isString(list)) return iter(list)
-  for(var i = 0; i < list.length; i++)
-    iter(list[i], (list.length - i - 1))
-}
-
 function group (g, reduce) {
 
   function compare (a, b) {
@@ -70,19 +64,14 @@ function gmake (query) {
   if(isSimple(query)) return make(query)
 
   var paths = []
-  function isMap (e) {
-    return !isSimple(e) ? (paths.push(e), e) : undefined
-  }
-  function isObj (e) {
-    return u.isObject(e) && !isSimple(e)
-  }
-  var maps = u.project(query, isMap, isObj)
+  u.each(query, function traverse (value) {
+    if(isSimple(value)) return
+    else if(u.isObject(value)) each(value, traverse)
+    else if(value) paths.push(value)
+  })
 
   return paths.length ? group(paths, make(query)) : make(query)
 }
 
 module.exports = gmake
-
-
-
 
