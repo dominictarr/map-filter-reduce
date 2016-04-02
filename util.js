@@ -44,8 +44,8 @@ function lower (v) {
   if(isObject(v)) {
     if(isArray(v.$prefix)) return v.$prefix.concat(exports.HI)
     if(isString(v.$prefix)) return v.$prefix
-    if(has(v, '$lt')) return v.$lt
-    if(has(v, '$lte')) return v.$lte
+    if(has(v, '$gt')) return v.$gt
+    if(has(v, '$gte')) return v.$gte
   }
   if(isArray(v)) return v.map(lower)
 }
@@ -55,8 +55,8 @@ function upper (v) {
   if(isObject(v)) {
     if(isArray(v.$prefix)) return v.$prefix.concat(exports.LO)
     if(isString(v.$prefix)) return v.$prefix+'\uffff'
-    if(has(v, '$gt')) return v.$gt
-    if(has(v, '$gte')) return v.$gte
+    if(has(v, '$le')) return v.$lt
+    if(has(v, '$lte')) return v.$lte
   }
   if(isArray(v)) return v.map(upper)
 }
@@ -84,6 +84,26 @@ function map(obj, iter, o) {
   return o
 }
 
+function project (value, map, isObj) {
+  isObj = isObj || isObject
+  if(!isObj(value))
+    return map(value)
+  else {
+    var o
+    for(var k in value) {
+      var v = project(value[k], map, isObj)
+      if(v !== undefined)
+        (o = o || {})[k] = v
+    }
+    return o
+  }
+}
+
+//get all paths within an object
+function paths (value, test) {
+
+}
+
 exports.isString = isString
 exports.isNumber = isNumber
 exports.isBasic = isBasic
@@ -93,12 +113,15 @@ exports.isRange = isRange
 exports.isExact = isExact
 exports.isLtgt = isLtgt
 
-exports.has = has
-exports.get = get
-exports.map = map
+exports.has     = has
+exports.get     = get
+exports.map     = map
+exports.project = project
 
 exports.upper = upper
 exports.lower = lower
 
 exports.HI = undefined
 exports.LO = null
+
+
