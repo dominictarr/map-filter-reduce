@@ -6,9 +6,11 @@ var search = require('binary-search')
 function isFunction (f) { return 'function' === typeof f }
 
 function isSimple(query) {
-  for(var k in simple) if(u.has(query, k)) return k
+  if(query.$reduce) return amake(query.$reduce)
+  for(var k in simple) if(u.has(query, k)) return lookup(simple[k], query[k])
 }
 
+//this should be a reduce and a map
 function lookup(reduce, path) {
   if(path === true) return reduce
   return function (a, b) {
@@ -24,7 +26,7 @@ function multi(obj) {
   }
 }
 
-function group (g, reduce) {
+function arrayGroup (g, reduce) {
 
   function compare (a, b) {
     for(var i in g) {
@@ -46,32 +48,55 @@ function group (g, reduce) {
   }
 }
 
+function objectGroup (g, reduce) {
+  if('string' === typeof g) g = [g]
+  return function (a, b) {
+    var A = a = a || {}
+    u.each(g, function (k, i) {
+      var last = (i == (g.length - 1))
+      var v = u.get(b, k)
+      A[v] = last ? reduce(A[v], b) : A[v] || {}
+      A = A[v]
+    })
+    return a
+  }
+}
+
 
 function make (query) {
-  var k = isSimple(query)
-  if(k) return lookup(simple[k], query[k])
-  else if(u.isObject(query))
-    return multi(map(query, function (q, k) {
-      if(k == '$group') return undefined
-      return make(query[k])
-    }))
+  var r = isSimple(query)
+  if(r) return r
+  else if(query.$group)
+    return objectGroup(query.$group, gmake(query.$reduce))
+  else if(u.isObject(query)) {
+    return multi(map(query, gmake))
+  }
   else return function (a, b) {
     return b[query]
   }
 }
 
-function gmake (query) {
-  if(isSimple(query)) return make(query)
+
+function amake (query) {
+  if(query.$group) return objectGroup(query.$group, make(query.$reduce))
+
+  var r = isSimple(query)
+  if(r) return r
 
   var paths = []
   u.each(query, function traverse (value) {
-    if(isSimple(value)) return
+    if(isSimple(value) || value.$group || value.$reduce) return
     else if(u.isObject(value)) each(value, traverse)
     else if(value) paths.push(value)
   })
 
-  return paths.length ? group(paths, make(query)) : make(query)
+  return paths.length ? arrayGroup(paths, make(query)) : make(query)
 }
 
-module.exports = gmake
+function gmake (query) {
+  if(query.$group && !query.$reduce) throw new Error('expected $reduce')
+  return query.$group ? objectGroup(query.$group, gmake(query.$reduce)) : make(query)
+}
+
+module.exports = amake
 

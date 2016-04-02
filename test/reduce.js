@@ -65,14 +65,14 @@ tape('group', function (t) {
   return t.end()
   t.deepEqual(
     objs.reduce(R({
-      $group: 'baz', foo: {$max:'foo'}, bar: {$sum: 'bar'}
+      $group: 'baz', $reduce: {foo: {$max:'foo'}, bar: {$sum: 'bar'}}
     }), null),
     {"true": {foo: 10, bar: 10}, "false": {foo: 0, bar: 5}}
   )
 
   t.deepEqual(
     objs.reduce(R({
-      $group: 'baz', foo: {$max:'foo'}, bar: {$collect: 'bar'}
+      $group: 'baz', $reduce: {foo: {$max:'foo'}, bar: {$collect: 'bar'}}
     }), null),
     {"true": {foo: 10, bar: [2,3,5]}, "false": {foo: 0, bar: [1,4]}}
   )
@@ -118,4 +118,82 @@ tape('more groups', function (t) {
   t.end()
 })
 
+
+tape('more groups, object', function (t) {
+  t.deepEqual(groups.reduce(R({
+      $group: ['country', 'dwelling'],
+      $reduce: {$collect: 'name'}
+    }), null),
+    {
+      US: {
+        apartment: ['pfraze', 'du5t'],
+        house: ['substack']
+      },
+      NZ: {
+        house: ['mix'],
+        sailboat: ['dominic']
+      }
+    }
+  )
+  t.end()
+})
+
+tape('nested object groups', function (t) {
+  t.deepEqual(
+    groups.reduce(R({
+      $group: 'country',
+      $reduce: {
+        population: {$count: true},
+        housing: {$group: 'dwelling', $reduce: { $count: true }}
+      }
+    }), null),
+    { US: { population: 3, housing: { apartment: 2, house: 1 } },
+      NZ: { population: 2, housing: { house: 1, sailboat: 1 } } }
+  )
+  t.end()
+})
+
+tape('nested array groups', function (t) {
+
+  t.deepEqual(
+    groups.reduce(R({
+      dwelling: 'dwelling',
+      citizens: {$reduce:  {
+        name: 'name', country: 'country'
+      }}
+    }), null),
+    [
+      {dwelling: 'apartment', citizens: [
+        {name: 'du5t', country: 'US'},
+        {name: 'pfraze', country: 'US'}
+      ]},
+      {dwelling: 'house', citizens: [
+        {name: 'mix', country: 'NZ'},
+        {name: 'substack', country: 'US'}
+      ]},
+      {dwelling: 'sailboat', citizens: [
+        {name: 'dominic', country: 'NZ'}
+      ]}
+    ]
+  )
+  t.end()
+})
+
+tape('nested array groups', function (t) {
+
+  t.deepEqual(
+    groups.reduce(R({
+      dwelling: 'dwelling',
+      citizens: {$group: 'country', $reduce:  {
+        $count: true
+      }}
+    }), null),
+    [
+      {dwelling: 'apartment', citizens: {US: 2}},
+      {dwelling: 'house', citizens: {NZ: 1, US: 1}},
+      {dwelling: 'sailboat', citizens: {NZ: 1}}
+    ]
+  )
+  t.end()
+})
 
