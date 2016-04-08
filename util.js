@@ -9,7 +9,7 @@ function isBasic (p) { return isString(p) || isNumber(p) || isBoolean(p) }
 
 var isArray = Array.isArray
 
-function isObject (o) { return o && 'object' === typeof o }
+function isObject (o) { return o && 'object' === typeof o && !isArray(o) }
 
 function has(o, k) {
   return Object.hasOwnProperty.call(o, k)
