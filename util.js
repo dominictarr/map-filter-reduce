@@ -84,6 +84,17 @@ function map(obj, iter, o) {
   return o
 }
 
+function mapa(obj, iter) {
+  if(Array.isArray(obj)) return obj.map(iter)
+  var a = []
+  for(var k in obj) {
+    var v = iter(obj[k], k, obj)
+    if(v !== undefined) a.push(v)
+  }
+  return a
+
+}
+
 function each(obj, iter) {
   if(Array.isArray(obj)) return obj.forEach(iter)
   else if(isObject(obj))
@@ -134,6 +145,7 @@ exports.isLtgt = isLtgt
 exports.has     = has
 exports.get     = get
 exports.map     = map
+exports.mapa    = mapa
 exports.project = project
 exports.paths   = paths
 exports.each    = each
