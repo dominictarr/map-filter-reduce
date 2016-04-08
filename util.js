@@ -1,4 +1,5 @@
 'use strict'
+
 function isString(s) { return 'string' === typeof s }
 
 function isNumber(n) { return !isNaN(+n) }
@@ -6,6 +7,8 @@ function isNumber(n) { return !isNaN(+n) }
 function isBoolean (b) { return 'boolean' === typeof b }
 
 function isBasic (p) { return isString(p) || isNumber(p) || isBoolean(p) }
+
+function isFunction (f) { return 'function' === typeof f }
 
 var isArray = Array.isArray
 
@@ -122,6 +125,7 @@ function project (value, map, isObj) {
 //this can probably be optimized to create less arrays!
 function paths (object, test) {
   var p = []
+  if(test(object)) return []
   for(var key in object) {
     var value = object[key]
     if(test(value)) p.push(key)
@@ -141,6 +145,7 @@ exports.isObject = isObject
 exports.isRange = isRange
 exports.isExact = isExact
 exports.isLtgt = isLtgt
+exports.isFunction = isFunction
 
 exports.has     = has
 exports.get     = get
@@ -155,4 +160,5 @@ exports.lower = lower
 
 exports.HI = undefined
 exports.LO = null
+
 
