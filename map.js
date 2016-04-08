@@ -42,7 +42,7 @@ function make(q) {
   if(u.isString(q) || u.isNumber(q)) return key(q)
   if(u.isArray(q)) return path(q.map(make))
   if(u.isObject(q)) return obj(map(q, make))
-  throw new Error('no match - should never mappen')
+  throw new Error('no match - should never happen')
 }
 
 module.exports = make
