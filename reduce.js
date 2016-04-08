@@ -26,19 +26,25 @@ function multi(obj) {
   }
 }
 
-function arrayGroup (g, reduce) {
+//rawpaths, reducedpaths, reduce
+function arrayGroup (_g, g, reduce) {
 
+  //we can use a different lookup path on the right hand object
+  //is always the "needle"
+  //compare(haystay[j], needle)
   function compare (a, b) {
     for(var i in g) {
-      var x = u.get(a, g[i])
+      var x = u.get(a, _g[i])
       var y = u.get(b, g[i])
-      if(x != y) return x < y ? -1 : 1
+      console.log(x, y, a, b)
+     if(x != y) return x < y ? -1 : 1
     }
     return 0
   }
 
   return function (a, b) {
     var A = a = a || []
+    console.log('SEARCH', A, b, _g, g)
     var i = search(A, b, compare)
 
     if(i >= 0) A[i] = reduce(A[i], b)
@@ -68,11 +74,11 @@ function make (query) {
   if(r) return r
   else if(query.$group)
     return objectGroup(query.$group, gmake(query.$reduce))
-  else if(u.isObject(query)) {
+  else if(u.isObject(query) && !u.isArray(query)) {
     return multi(map(query, gmake))
   }
   else return function (a, b) {
-    return b[query]
+    return u.get(b, query)
   }
 }
 
@@ -83,14 +89,25 @@ function amake (query) {
   var r = isSimple(query)
   if(r) return r
 
-  var paths = []
-  u.each(query, function traverse (value) {
+  //get the lookup paths, and the paths they will be saved to.
+  //these will both be passed to arrayGroup.
+  var paths = [], _paths =
+  u.mapa(query, function traverse (value, key) {
     if(isSimple(value) || value.$group || value.$reduce) return
-    else if(u.isObject(value)) each(value, traverse)
-    else if(value) paths.push(value)
+    else if(u.isObject(value) && !u.isArray(value))
+      return u.mapa(value, traverse).map(function (path) {
+        return [key].concat(path)
+      })
+    else if(value) {
+      paths.push(value)
+      return [key]
+    }
   })
+  //I don't understand exactly why i need this line but i do
+  if(_paths.length == 1 && u.isArray(_paths[0])) _paths = _paths[0]
 
-  return paths.length ? arrayGroup(paths, make(query)) : make(query)
+  console.log('PATHS', _paths, '<=', paths)
+  return paths.length ? arrayGroup(_paths, paths, make(query)) : make(query)
 }
 
 function gmake (query) {
@@ -99,4 +116,9 @@ function gmake (query) {
 }
 
 module.exports = amake
+
+
+
+
+
 
