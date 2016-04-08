@@ -32,11 +32,9 @@ function arrayGroup (_g, g, reduce) {
   //we can use a different lookup path on the right hand object
   //is always the "needle"
   //compare(haystay[j], needle)
-  function compare (a, b) {
-    for(var i in g) {
-      var x = u.get(a, _g[i])
-      var y = u.get(b, g[i])
-      console.log(x, y, a, b)
+  function compare (hay, needle) {
+    for(var i in _g) {
+      var x = u.get(hay, _g[i]), y = needle[i]
      if(x != y) return x < y ? -1 : 1
     }
     return 0
@@ -44,8 +42,7 @@ function arrayGroup (_g, g, reduce) {
 
   return function (a, b) {
     var A = a = a || []
-    console.log('SEARCH', A, b, _g, g)
-    var i = search(A, b, compare)
+    var i = search(A, g.map(function (p) { return u.get(b, p) }), compare)
 
     if(i >= 0) A[i] = reduce(A[i], b)
     else       A.splice(~i, 0, reduce(undefined, b))
@@ -116,6 +113,10 @@ function gmake (query) {
 }
 
 module.exports = amake
+
+
+
+
 
 
 
