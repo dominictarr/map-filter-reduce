@@ -26,8 +26,8 @@ module.exports = {
     function (a, b) {
       if(!a) a = a || []
       if(!Array.isArray(a)) a = [a]
-      if(b == undefined) return a
       a.push(b)
       return a
     }
 }
+
