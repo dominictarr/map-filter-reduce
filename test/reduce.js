@@ -12,10 +12,10 @@ tape('easy', function (t) {
 })
 
 var objs = [
-  {foo:  0, bar: 1, baz: false},
-  {foo: 10, bar: 2, baz: true},
+  {foo:  0, bar: 1, baz: false, other: 'sometimes'},
+  {foo: 10, bar: 2, baz: true, other: true},
   {foo: -5, bar: 3, baz: true},
-  {foo: -5, bar: 4, baz: false},
+  {foo: -5, bar: 4, baz: false, other: {okay: true}},
   {foo:  3, bar: 5, baz: true}
 ]
 
@@ -75,6 +75,22 @@ tape('group', function (t) {
       $group: 'baz', $reduce: {foo: {$max:'foo'}, bar: {$collect: 'bar'}}
     }), null),
     {"true": {foo: 10, bar: [2,3,5]}, "false": {foo: 0, bar: [1,4]}}
+  )
+
+  t.end()
+})
+
+tape('group, sometimes', function (t) {
+
+  t.deepEqual(
+    objs.reduce(R({
+      other: ['other', 'okay'],
+      values: {$collect: 'other'}
+    }), null),
+    [
+      {other: true, values: [{okay: true}]},
+      {other: undefined, values: ['sometimes', true, undefined, undefined]}
+    ]
   )
 
   t.end()
