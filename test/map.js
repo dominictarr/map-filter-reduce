@@ -37,7 +37,7 @@ tape('array is repeated map', function (t) {
 
 tape('badmap', function (t) {
   t.deepEqual(map('key', 'string'), undefined)
-  t.deepEqual(map({foo: true}, {bar:1, baz:2}), undefined)
+  t.deepEqual(map({foo: true}, {bar:1, baz:2}), {foo: undefined})
   t.deepEqual(map({foo: true}, null), undefined)
   t.deepEqual(map(['a', 'b', 'c'], {a: true}), undefined)
   t.end()
