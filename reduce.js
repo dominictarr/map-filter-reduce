@@ -1,7 +1,8 @@
 var u = require('./util')
-var map = u.map
+var Map = require('./map')
 var simple = require('./basic')
 var search = require('binary-search')
+var compare = require('typewiselite')
 
 function isFunction (f) { return 'function' === typeof f }
 
@@ -18,10 +19,13 @@ function lookup(reduce, path) {
   }
 }
 
-function multi(obj) {
+function multi(query) {
+  if(u.isFunction(query)) return query
+
   return function (a, b) {
-    return map(obj, function (reduce, k) {
-      return reduce(a[k], b)
+    return u.map(query, function traverse (reduce, k) {
+      //some reduce functions may be maps (which take one arg)
+      return reduce.length == 1 ? reduce(b) : reduce(a[k], b)
     }, a = a || {})
   }
 }
@@ -32,17 +36,18 @@ function arrayGroup (_g, g, reduce) {
   //we can use a different lookup path on the right hand object
   //is always the "needle"
   //compare(haystay[j], needle)
-  function compare (hay, needle) {
+  function _compare (hay, needle) {
     for(var i in _g) {
       var x = u.get(hay, _g[i]), y = needle[i]
-     if(x != y) return x < y ? -1 : 1
+    if(x !== y) return compare(x, y) // < y ? -1 : 1
     }
     return 0
   }
 
   return function (a, b) {
+    if(a && !Array.isArray(a)) a = reduce([], a)
     var A = a = a || []
-    var i = search(A, g.map(function (p) { return u.get(b, p) }), compare)
+    var i = search(A, g.map(function (fn) { return fn(b) }), _compare)
 
     if(i >= 0) A[i] = reduce(A[i], b)
     else       A.splice(~i, 0, reduce(undefined, b))
@@ -65,6 +70,17 @@ function objectGroup (g, reduce) {
   }
 }
 
+function make2 (query) {
+  var r = isSimple(query)
+  if(r) return r
+  if(query.$group)
+    return objectGroup(query.$group, multi(make2(query.$reduce)))
+  if(query.$reduce)
+    return make2(query.$reduce)
+  if(u.isObject(query))
+    return u.map(query, make2)
+  return Map(query)
+}
 
 function make (query) {
   var r = isSimple(query)
@@ -72,38 +88,29 @@ function make (query) {
   else if(query.$group)
     return objectGroup(query.$group, gmake(query.$reduce))
   else if(u.isObject(query) && !u.isArray(query)) {
-    return multi(map(query, gmake))
+    return multi(u.map(query, gmake))
   }
   else return function (a, b) {
     return u.get(b, query)
   }
 }
 
-
 function amake (query) {
-  if(query.$group) return objectGroup(query.$group, make(query.$reduce))
-
+  var _query = make2(query)
+  if(query.$group)
+      return objectGroup(query.$group, make(query.$reduce))
   var r = isSimple(query)
   if(r) return r
 
   //get the lookup paths, and the paths they will be saved to.
   //these will both be passed to arrayGroup.
-  var paths = [], _paths =
-  u.mapa(query, function traverse (value, key) {
-    if(isSimple(value) || value.$group || value.$reduce) return
-    else if(u.isObject(value) && !u.isArray(value))
-      return u.mapa(value, traverse).map(function (path) {
-        return [key].concat(path)
-      })
-    else if(value) {
-      paths.push(value)
-      return [key]
+  var paths = []
+  var _paths = u.paths(_query, function (value) {
+    if(u.isFunction(value) && value.length === 1) {
+      return paths.push(value), true
     }
   })
-  //I don't understand exactly why i need this line but i do
-  if(_paths.length == 1 && u.isArray(_paths[0])) _paths = _paths[0]
 
-  console.log('PATHS', _paths, '<=', paths)
   return paths.length ? arrayGroup(_paths, paths, make(query)) : make(query)
 }
 
@@ -113,12 +120,6 @@ function gmake (query) {
 }
 
 module.exports = amake
-
-
-
-
-
-
 
 
 
