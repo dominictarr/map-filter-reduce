@@ -80,12 +80,11 @@ function get(obj, path) {
 function map(obj, iter, o) {
   if(Array.isArray(obj)) return obj.map(iter)
   o = o || {}
-  for(var k in obj) {
-    var v = iter(obj[k], k, obj)
-    if(v !== undefined) o[k] = v
-  }
+  for(var k in obj)
+    o[k] = iter(obj[k], k, obj)
   return o
 }
+
 
 function mapa(obj, iter) {
   if(Array.isArray(obj)) return obj.map(iter)
@@ -160,5 +159,9 @@ exports.lower = lower
 
 exports.HI = undefined
 exports.LO = null
+
+
+
+
 
 
