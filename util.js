@@ -30,8 +30,9 @@ function isLtgt (v) {
 }
 
 function isRange (v) {
-  if(!isObject(v)) return false
-  if(isString(v.$prefix)) return true
+  if(v == null) return false
+//  if(!isObject(v)) return false
+  if(v.$prefix) return true
   if(isArray(v)) return find(v, isRange)
   return isLtgt(v)
 }
@@ -159,6 +160,9 @@ exports.lower = lower
 
 exports.HI = undefined
 exports.LO = null
+
+
+
 
 
 
