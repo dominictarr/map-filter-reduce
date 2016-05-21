@@ -1,6 +1,10 @@
 var tape = require('tape')
-var R = require('../reduce')
+var r = require('../i')
 var numbers = [1,2,3,4,5]
+
+function R(query) {
+  return r({$reduce:query})
+}
 
 tape('easy', function (t) {
   t.equal(numbers.reduce(R({$count: true})), 5)
@@ -62,20 +66,20 @@ tape('group', function (t) {
       {baz: true, count: 3}
     ]
   )
-  return t.end()
-  t.deepEqual(
-    objs.reduce(R({
-      $group: 'baz', $reduce: {foo: {$max:'foo'}, bar: {$sum: 'bar'}}
-    }), null),
-    {"true": {foo: 10, bar: 10}, "false": {foo: 0, bar: 5}}
-  )
-
-  t.deepEqual(
-    objs.reduce(R({
-      $group: 'baz', $reduce: {foo: {$max:'foo'}, bar: {$collect: 'bar'}}
-    }), null),
-    {"true": {foo: 10, bar: [2,3,5]}, "false": {foo: 0, bar: [1,4]}}
-  )
+//  return t.end()
+//  t.deepEqual(
+//    objs.reduce(R({
+//      $group: 'baz', $reduce: {foo: {$max:'foo'}, bar: {$sum: 'bar'}}
+//    }), null),
+//    {"true": {foo: 10, bar: 10}, "false": {foo: 0, bar: 5}}
+//  )
+//
+//  t.deepEqual(
+//    objs.reduce(R({
+//      $group: 'baz', $reduce: {foo: {$max:'foo'}, bar: {$collect: 'bar'}}
+//    }), null),
+//    {"true": {foo: 10, bar: [2,3,5]}, "false": {foo: 0, bar: [1,4]}}
+//  )
 
   t.end()
 })
@@ -93,123 +97,6 @@ tape('group, sometimes', function (t) {
     ]
   )
 
-  t.end()
-})
-
-var groups = [
-  {
-    name: 'pfraze', country: 'US', dwelling: 'apartment'
-  },
-  {
-    name: 'substack', country: 'US', dwelling: 'house'
-  },
-  {
-    name: 'mix', country: 'NZ', dwelling: 'house'
-  },
-  {
-    name: 'du5t', country: 'US', dwelling: 'apartment'
-  },
-  {
-    name: 'dominic', country: 'NZ', dwelling: 'sailboat'
-  }
-]
-
-tape('more groups', function (t) {
-  t.deepEqual(groups.reduce(R({
-      country: 'country', dwelling: 'dwelling', people: {$collect: 'name'}
-    }), null), [
-    {
-      country: 'NZ', dwelling: 'house', people: ['mix']
-    },
-    {
-      country: 'NZ', dwelling: 'sailboat', people: ['dominic']
-    },
-    {
-      country: 'US', dwelling: 'apartment', people: ['pfraze', 'du5t']
-    },
-    {
-      country: 'US', dwelling: 'house', people: ['substack']
-    }
-  ])
-  t.end()
-})
-
-
-tape('more groups, object', function (t) {
-  t.deepEqual(groups.reduce(R({
-      $group: ['country', 'dwelling'],
-      $reduce: {$collect: 'name'}
-    }), null),
-    {
-      US: {
-        apartment: ['pfraze', 'du5t'],
-        house: ['substack']
-      },
-      NZ: {
-        house: ['mix'],
-        sailboat: ['dominic']
-      }
-    }
-  )
-  t.end()
-})
-
-tape('nested object groups', function (t) {
-  t.deepEqual(
-    groups.reduce(R({
-      $group: 'country',
-      $reduce: {
-        population: {$count: true},
-        housing: {$group: 'dwelling', $reduce: { $count: true }}
-      }
-    }), null),
-    { US: { population: 3, housing: { apartment: 2, house: 1 } },
-      NZ: { population: 2, housing: { house: 1, sailboat: 1 } } }
-  )
-  t.end()
-})
-
-tape('nested array groups', function (t) {
-
-  t.deepEqual(
-    groups.reduce(R({
-      dwelling: 'dwelling',
-      citizens: {$reduce:  {
-        name: 'name', country: 'country'
-      }}
-    }), null),
-    [
-      {dwelling: 'apartment', citizens: [
-        {name: 'du5t', country: 'US'},
-        {name: 'pfraze', country: 'US'}
-      ]},
-      {dwelling: 'house', citizens: [
-        {name: 'mix', country: 'NZ'},
-        {name: 'substack', country: 'US'}
-      ]},
-      {dwelling: 'sailboat', citizens: [
-        {name: 'dominic', country: 'NZ'}
-      ]}
-    ]
-  )
-  t.end()
-})
-
-tape('nested array groups', function (t) {
-
-  t.deepEqual(
-    groups.reduce(R({
-      dwelling: 'dwelling',
-      citizens: {$group: 'country', $reduce:  {
-        $count: true
-      }}
-    }), null),
-    [
-      {dwelling: 'apartment', citizens: {US: 2}},
-      {dwelling: 'house', citizens: {NZ: 1, US: 1}},
-      {dwelling: 'sailboat', citizens: {NZ: 1}}
-    ]
-  )
   t.end()
 })
 
