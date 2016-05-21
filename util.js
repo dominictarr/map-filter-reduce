@@ -4,6 +4,8 @@ function isString(s) { return 'string' === typeof s }
 
 function isNumber(n) { return !isNaN(+n) }
 
+var isInteger = Number.isInteger
+
 function isBoolean (b) { return 'boolean' === typeof b }
 
 function isBasic (p) { return isString(p) || isNumber(p) || isBoolean(p) }
@@ -13,6 +15,11 @@ function isFunction (f) { return 'function' === typeof f }
 var isArray = Array.isArray
 
 function isObject (o) { return o && 'object' === typeof o && !isArray(o) }
+
+// [] or {}
+function isContainer (o) {
+  return o && 'object' == typeof o
+}
 
 function has(o, k) {
   return Object.hasOwnProperty.call(o, k)
@@ -137,15 +144,17 @@ function paths (object, test) {
   return p
 }
 
-exports.isString = isString
-exports.isNumber = isNumber
-exports.isBasic = isBasic
-exports.isArray = isArray
-exports.isObject = isObject
-exports.isRange = isRange
-exports.isExact = isExact
-exports.isLtgt = isLtgt
-exports.isFunction = isFunction
+exports.isString    = isString
+exports.isNumber    = isNumber
+exports.isInteger   = isInteger
+exports.isBasic     = isBasic
+exports.isArray     = isArray
+exports.isObject    = isObject
+exports.isContainer = isContainer
+exports.isRange     = isRange
+exports.isExact     = isExact
+exports.isLtgt      = isLtgt
+exports.isFunction  = isFunction
 
 exports.has     = has
 exports.get     = get
@@ -160,12 +169,5 @@ exports.lower = lower
 
 exports.HI = undefined
 exports.LO = null
-
-
-
-
-
-
-
 
 
