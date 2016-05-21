@@ -1,6 +1,5 @@
 var tape = require('tape')
 
-var tape = require('tape')
 var r = require('../i')
 var numbers = [1,2,3,4,5]
 
@@ -112,6 +111,7 @@ tape('first initial', function (t) {
   )
   t.end()
 })
+
 
 
 

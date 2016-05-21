@@ -11,16 +11,12 @@ tape('simple', function (t) {
   t.equal(make([{$mod: 2}, {$not: true}])(4), true)
 
   t.end()
-
 })
-
-
 
 tape('filter, map', function (t) {
 
   t.equal(
-    make({$filter: 'foo'})
-      ({foo: true}),
+    make({$filter: 'foo'}) ('foo'),
     true
   )
 
@@ -72,5 +68,4 @@ tape('reduce with group', function (t) {
   )
   t.end()
 })
-
 

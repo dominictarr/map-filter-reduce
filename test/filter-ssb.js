@@ -1,5 +1,8 @@
 var tape = require('tape')
-var filter = require('../filter')
+var make = require('../i')
+function filter (q) {
+  return make({$filter: q})
+}
 var input = [
   {
     "rel": [

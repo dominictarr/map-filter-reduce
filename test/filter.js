@@ -1,5 +1,9 @@
 var tape = require('tape')
-var filter = require('../filter')
+var make = require('../i')
+
+function filter(query) {
+  return make({$filter: query})
+}
 
 var data = [
   'string',
