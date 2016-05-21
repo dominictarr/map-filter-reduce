@@ -1,5 +1,7 @@
 'use strict'
 
+var u = require('../util')
+
 exports.lt = function (a, b) {
   return a < b
 }
@@ -13,7 +15,6 @@ exports.gte = function (a, b) {
   return a >= b
 }
 exports.eq = function (a, b) {
-  console.log('EQ', a, b)
   return a === b
 }
 exports.ne = function (a, b) {
@@ -26,6 +27,12 @@ exports.truthy = function (a) {
   return !!a
 }
 exports.prefix = function (a, str) {
+  if(u.isArray(str))
+    return ( u.isArray(a) && a.length > str.length
+      && str.every(function (v, i) {
+          return a[i] === v
+      })
+    )
   return 'string' == typeof a && a.substring(0, str.length) == str
 }
 exports.is = function (a, type) {
@@ -34,9 +41,7 @@ exports.is = function (a, type) {
 exports.type = function (a) {
   return typeof a
 }
-var u = require('../util')
 exports.int = function (a) {
-  console.log('integer?', a)
   return u.isInteger(a)
 }
 exports.mod = function (a, b) {
@@ -45,5 +50,4 @@ exports.mod = function (a, b) {
 exports.get = function (a, path) {
   return u.get(a, path)
 }
-
 
