@@ -44,7 +44,6 @@ function map$ (obj, map) {
   return $obj
 }
 
-//fn => A => B => fn(A, B)
 var maps = map$(require('./simple/maps'), function (fn) {
   return function (argument) {
     return function (value) {
@@ -74,7 +73,6 @@ function applyFirst(fns) {
   }
 }
 
-//fn => A => a => b => fn(a, make(A)(b))
 var isReduce = applyFirst(map$(require('./simple/reduces'), function (reduce) {
   return function (argument) {
     var get = make(argument)
@@ -119,68 +117,68 @@ function arrayGroup (set, get, reduce) {
 }
 
 var special = {
-    filter: function makeFilter (rule) {
-      if(u.isContainer(rule) && !is$(rule)) {
-        rule = u.map(rule, makeFilter)
-        return function (value) {
-          if(value == null) return false
-          for(var k in rule)
-            if(!rule[k](value[k])) return false
-          return true
-        }
+  filter: function makeFilter (rule) {
+    if(u.isContainer(rule) && !is$(rule)) { //array or object
+      rule = u.map(rule, makeFilter)
+      return function (value) {
+        if(value == null) return false
+        for(var k in rule)
+          if(!rule[k](value[k])) return false
+        return true
       }
-
-      //now only values at the end...
-      return isBasicLiteral(rule) || make(rule)
-    },
-
-    map: function makeMap (rule) {
-      if(u.isObject(rule) && !is$(rule)) {
-        var rules = u.map(rule, makeMap)
-        return function (value) {
-          if(value == null) return undefined
-          var keys = 0
-          var ret = u.map(rules, function (fn, key) {
-            if(rule[key] === true) {
-              keys ++
-              return value && value[key]
-            }
-            keys ++
-            return fn(value)
-          })
-          return keys ? ret : undefined
-        }
-      }
-      return make(rule)
-    },
-
-    reduce: function (rule) {
-      var gets = [], sets = []
-      var reduce = (function makeReduce (rule, path) {
-        if(u.isObject(rule) && !is$(rule)) {
-          var rules = u.map(rule, function (rule, k) {
-            return makeReduce(rule, path.concat(k))
-          })
-          return function (a, b) {
-            if(!a) a = {}
-            return u.map(rules, function (reduce, key) {
-              return a[key] = reduce.length === 1
-                  ? reduce(b) : reduce(a[key], b)
-            })
-          }
-        }
-        else {
-          var fn = make(rule)
-          if(fn.length === 1) { gets.push(fn); sets.push(path.length == 1 ? path[0] : path) }
-          return fn
-        }
-      })(rule, [])
-      return gets.length
-        ? arrayGroup(sets, gets, reduce) : reduce
     }
-  }
 
-// fn => q => fn(q)
+    //now only values at the end...
+    return isBasicLiteral(rule) || make(rule)
+  },
+
+  map: function makeMap (rule) {
+    if(u.isObject(rule) && !is$(rule)) {
+      var rules = u.map(rule, makeMap)
+      return function (value) {
+        if(value == null) return undefined
+        var keys = 0
+        var ret = u.map(rules, function (fn, key) {
+          if(rule[key] === true) {
+            keys ++
+            return value && value[key]
+          }
+          keys ++
+          return fn(value)
+        })
+        return keys ? ret : undefined
+      }
+    }
+    return make(rule)
+  },
+
+  reduce: function (rule) {
+    var gets = [], sets = []
+    var reduce = (function makeReduce (rule, path) {
+      if(u.isObject(rule) && !is$(rule)) {
+        var rules = u.map(rule, function (rule, k) {
+          return makeReduce(rule, path.concat(k))
+        })
+        return function (a, b) {
+          if(!a) a = {}
+          return u.map(rules, function (reduce, key) {
+            return a[key] = reduce.length === 1
+                ? reduce(b) : reduce(a[key], b)
+          })
+        }
+      }
+      else {
+        var fn = make(rule)
+        if(fn.length === 1) { gets.push(fn); sets.push(path.length == 1 ? path[0] : path) }
+        return fn
+      }
+    })(rule, [])
+
+    return gets.length
+      ? arrayGroup(sets, gets, reduce) : reduce
+  }
+}
+
 var isSpecial = applyFirst(map$(special, function (fn) {
   return function (query) { return fn(query) }
 }))
@@ -191,5 +189,4 @@ function make (rule) {
 }
 
 module.exports = make
-
 

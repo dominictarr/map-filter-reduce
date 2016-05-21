@@ -1,5 +1,5 @@
 
-var make = require('../i')
+var make = require('../make')
 var tape = require('tape')
 
 tape('simple', function (t) {

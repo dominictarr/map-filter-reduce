@@ -1,6 +1,6 @@
 var pull = require('pull-stream')
 
-var make = require('./i')
+var make = require('./make')
 var SinkThrough = require('pull-sink-through')
 
 function first (q) {

@@ -1,6 +1,6 @@
 
 var tape = require('tape')
-var make = require('../i')
+var make = require('../make')
 
 var inputs = [
   'string'

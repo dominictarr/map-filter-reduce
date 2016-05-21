@@ -1,5 +1,5 @@
 var tape = require('tape')
-var r = require('../i')
+var r = require('../make')
 var numbers = [1,2,3,4,5]
 
 function R(query) {
