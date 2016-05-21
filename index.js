@@ -1,8 +1,9 @@
 var pull = require('pull-stream')
 
-var filter = require('./filter')
-var map = require('./map')
-var reduce = require('./reduce')
+var make = require('./i')
+//var filter = require('./filter')
+//var map = require('./map')
+//var reduce = require('./reduce')
 var SinkThrough = require('pull-sink-through')
 
 function first (q) {
@@ -12,7 +13,8 @@ function first (q) {
 function get (q) {
   var k = first(q)
   var s = k.substring(1)
-  if(k[0] == '$' && exports[s]) return exports[s](q[k])
+  console.log(k, q)
+  if(k[0] == '$' && exports[s]) return exports[s](q)
   throw new Error('unknown function:'+ k)
 }
 
@@ -35,18 +37,19 @@ exports = module.exports = function (q, cb) {
 }
 
 exports.filter = function (q) {
-  return pull.filter(filter(q))
+  return pull.filter(make(q))
 }
 
 exports.map = function (q) {
-  return pull(pull.map(map(q)),pull.filter())
+  return pull(pull.map(make(q)),pull.filter())
 }
 
 exports.reduce = function (q, cb) {
+  //TODO: realtime reduce.
   if(cb)
-    return pull.reduce(reduce(q), null, cb)
+    return pull.reduce(make(q), null, cb)
   return pull(SinkThrough(function (cb) {
-    return pull.reduce(reduce(q), null, cb)
+    return pull.reduce(make(q), null, cb)
   }), pull.flatten())
 }
 
