@@ -77,6 +77,7 @@ function make2 (query) {
     return objectGroup(query.$group, multi(make2(query.$reduce)))
   if(query.$reduce)
     return make2(query.$reduce)
+  if(u.isFunction(query)) return query
   if(u.isObject(query))
     return u.map(query, make2)
   return Map(query)
@@ -90,28 +91,35 @@ function make (query) {
   else if(u.isObject(query) && !u.isArray(query)) {
     return multi(u.map(query, gmake))
   }
+  else if(u.isFunction (query)) return query
   else return function (a, b) {
-    return u.get(b, query)
+      return u.get(b, query)
   }
 }
 
 function amake (query) {
+  //traverse the query, and convert all subqueries into functions.
+  //single argument functions represent map/filter and 2 argument
+  //functions represent reduces.
+
   var _query = make2(query)
   if(query.$group)
       return objectGroup(query.$group, make(query.$reduce))
   var r = isSimple(query)
   if(r) return r
 
+  //get the paths to map/filters. these represent the group-by clause.
   //get the lookup paths, and the paths they will be saved to.
   //these will both be passed to arrayGroup.
-  var paths = []
-  var _paths = u.paths(_query, function (value) {
+
+  var getPaths = []
+  var setPaths = u.paths(_query, function (value) {
     if(u.isFunction(value) && value.length === 1) {
-      return paths.push(value), true
+      return getPaths.push(value), true
     }
   })
 
-  return paths.length ? arrayGroup(_paths, paths, make(query)) : make(query)
+  return getPaths.length ? arrayGroup(setPaths, getPaths, make(query)) : make(query)
 }
 
 function gmake (query) {
@@ -120,7 +128,5 @@ function gmake (query) {
 }
 
 module.exports = amake
-
-
 
 
