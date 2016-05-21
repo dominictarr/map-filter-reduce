@@ -217,13 +217,6 @@ In the following query,
 count items per country. Will give a stream of items each with
 a `{country, population}` fields.
 
-Sometimes, it's easier to work with an array or stream of the groups,
-but sometimes we'd rather have elements grouped into an object.
-For that we use the `$group` operator.
-``` js
-{$reduce: {$group: ['country', 'city'], $reduce: {$count: true}}}
-```
-
 This would return a object, with the shape `{<country>:{<city>: <population>}}`.
 
 Note that, like in `$map` arrays can be used to drill deep into
@@ -237,6 +230,7 @@ TODO: group by time ranges (day, month, week, year, etc)
 ## License
 
 MIT
+
 
 
 
