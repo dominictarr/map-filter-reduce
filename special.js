@@ -2,33 +2,73 @@ var u = require('./util')
 var compare = require('typewiselite')
 var search = require('binary-search')
 
-
 function is$ (obj) {
   for(var k in obj)
     if(k[0] === '$') return true
   return false
 }
 
+//rawpaths, reducedpaths, reduce
+function arrayGroup (set, get, reduce) {
+
+  //we can use a different lookup path on the right hand object
+  //is always the "needle"
+  function _compare (hay, needle) {
+    for(var i in set) {
+      var x = u.get(hay, set[i]), y = needle[i]
+      if(x !== y) return compare(x, y)
+    }
+    return 0
+  }
+
+  return function (a, b) {
+    if(a && !Array.isArray(a)) a = reduce([], a)
+    var A = a = a || []
+    var i = search(A, get.map(function (fn) { return fn(b) }), _compare)
+
+    if(i >= 0) A[i] = reduce(A[i], b)
+    else       A.splice(~i, 0, reduce(undefined, b))
+
+    return a
+  }
+}
+
 module.exports = function (make) {
 
   return {
     filter: function makeFilter (rule) {
-      if(u.isObject(rule) && !is$(rule)) {
+      if(u.isContainer(rule) && !is$(rule)) {
         rule = u.map(rule, makeFilter)
         return function (value) {
+          if(value == null) return false
           for(var k in rule)
             if(!rule[k](value[k])) return false
           return true
         }
       }
+
+      if(u.isBasic(rule))
+        return function (v) { return rule === v }
+
+      //now only values at the end...
       return make(rule)
     },
 
     map: function makeMap (rule) {
-      if(u.isObject(rule) && !is$(rule) && !u.isArray(rule)) {
+      if(u.isObject(rule) && !is$(rule)) {
         var rules = u.map(rule, makeMap)
         return function (value) {
-          return u.map(rules, function (fn) { return fn(value) })
+          if(value == null) return undefined
+          var keys = 0
+          var ret = u.map(rules, function (fn, key) {
+            if(rule[key] === true) {
+              keys ++
+              return value && value[key]
+            }
+            keys ++
+            return fn(value)
+          })
+          return keys ? ret : undefined
         }
       }
       return make(rule)
@@ -38,42 +78,12 @@ module.exports = function (make) {
       function makeReduce (rule) {
         if(u.isObject(rule) && !is$(rule) && !u.isArray(rule))
           return u.map(rule, makeReduce)
+
         return make(rule)
       }
 
-      //rawpaths, reducedpaths, reduce
-      function arrayGroup (set, get, reduce) {
-
-        //we can use a different lookup path on the right hand object
-        //is always the "needle"
-        //compare(haystay[j], needle)
-        function _compare (hay, needle) {
-          for(var i in set) {
-            var x = u.get(hay, set[i]), y = needle[i]
-            console.log('Cmp', x, y)
-            if(x !== y) return compare(x, y) // < y ? -1 : 1
-          }
-          return 0
-        }
-
-        return function (a, b) {
-          if(a && !Array.isArray(a)) a = reduce([], a)
-          var A = a = a || []
-          var i = search(A, get.map(function (fn) { return fn(b) }), _compare)
-
-          console.log('ary', A)
-          console.log('INDEX', i, A[i], b)
-          if(i >= 0) A[i] = reduce(A[i], b)
-          else       {
-            A.splice(~i, 0, reduce(undefined, b))
-          }
-          return a
-        }
-      }
-
-      if(u.isObject(rule) && !is$(rule) && !u.isArray(rule)) {
+      if(u.isObject(rule) && !is$(rule)) {
         var rules =  u.map(rule, makeReduce)
-        console.log('reduce rule', rules)
 
         var getPaths = []
         var setPaths = u.paths(rules, function (maybeMap) {
@@ -81,8 +91,6 @@ module.exports = function (make) {
             return getPaths.push(maybeMap), true
           }
         })
-
-        console.log('paths', getPaths, setPaths)
 
         function reduce (a, b) {
           return u.map(rules, function (reduce, key) {
@@ -95,16 +103,10 @@ module.exports = function (make) {
 
         return reduce
       }
-      else
-        return make(rule)
+      return make(rule)
     }
   }
 }
-
-
-
-
-
 
 
 
