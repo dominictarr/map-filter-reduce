@@ -13,7 +13,7 @@ function test(name, query, result) {
   tape(name, function (t) {
     pull(
       pull.values(data),
-      mfr.reduce(query),
+      mfr.reduce({$reduce: query}),
       pull.collect(function (err, ary) {
         if(err) throw err
         t.deepEqual(ary, result)
