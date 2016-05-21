@@ -75,10 +75,11 @@ module.exports = function (make) {
     },
 
     reduce: function (rule) {
+      //this traverses the rule THREE TIMES!
+      //surely I can do this in one go.
       function makeReduce (rule) {
         if(u.isObject(rule) && !is$(rule) && !u.isArray(rule))
           return u.map(rule, makeReduce)
-
         return make(rule)
       }
 
@@ -92,21 +93,29 @@ module.exports = function (make) {
           }
         })
 
-        function reduce (a, b) {
-          return u.map(rules, function (reduce, key) {
-            //handle maps as reduces (skip aggregator arg)
-            return reduce.length === 1 ? reduce(b) : reduce(a && a[key], b)
-          })
-        }
+        var reduce = (function createReduce(rule) {
+          if(u.isObject(rule)) {
+            var rules = u.map(rule, createReduce)
+            return function (a, b) {
+              if(!a) a = {}
+              return u.map(rules, function (reduce, key) {
+                return a[key] = reduce(a[key], b)
+              })
+            }
+          }
+          else if(u.isFunction(rule)) {
+            if(rule.length === 2) return rule
+            else return function (a, b) { return rule(b) }
+          }
+          else
+            throw new Error('could not process:'+JSON.stringify(rule))
+        })(rules)
 
-        if(getPaths.length) return arrayGroup(setPaths, getPaths, reduce)
-
-        return reduce
+        return getPaths.length
+          ? arrayGroup(setPaths, getPaths, reduce) : reduce
       }
       return make(rule)
     }
   }
 }
-
-
 
