@@ -55,7 +55,7 @@ function isSpecial(query) {
       return specials[k].call(make, query[k], query)
 }
 
-function make (rule) {
+function isBasicMap (rule) {
   if(u.isString(rule)) return function (value) {
     return value != null ? value[rule] : undefined
   }
@@ -63,12 +63,16 @@ function make (rule) {
   if(u.isInteger(rule)) return function (value) {
     return rule >= 0 ? value[rule] : value[+value.length + rule]
   }
-
+  
   if(true === rule)
     return function (value) { return value }
+}
 
+function isFun (rule) {
   if(u.isFunction(rule)) return rule
+}
 
+function isArrayCompose (rule) {
   if(u.isArray(rule)) {
     var rules = rule.map(make)
     return function (value) {
@@ -78,9 +82,14 @@ function make (rule) {
     }
   }
 
-  return isMap(rule) || isReduce(rule) || isSpecial(rule) || (function () {
-    throw new Error('could not process:'+JSON.stringify(rule))
-  })()
+}
+
+function make (rule) {
+  return isBasicMap(rule) || isFun(rule) || isArrayCompose(rule) ||
+    isMap(rule) || isReduce(rule) || isSpecial(rule) ||
+    (function () {
+      throw new Error('could not process:'+JSON.stringify(rule))
+    })()
 }
 
 module.exports = make
