@@ -1,9 +1,6 @@
 var pull = require('pull-stream')
 
 var make = require('./i')
-//var filter = require('./filter')
-//var map = require('./map')
-//var reduce = require('./reduce')
 var SinkThrough = require('pull-sink-through')
 
 function first (q) {
@@ -13,7 +10,6 @@ function first (q) {
 function get (q) {
   var k = first(q)
   var s = k.substring(1)
-  console.log(k, q)
   if(k[0] == '$' && exports[s]) return exports[s](q)
   throw new Error('unknown function:'+ k)
 }
@@ -52,4 +48,6 @@ exports.reduce = function (q, cb) {
     return pull.reduce(make(q), null, cb)
   }), pull.flatten())
 }
+
+
 

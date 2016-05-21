@@ -75,47 +75,32 @@ module.exports = function (make) {
     },
 
     reduce: function (rule) {
-      //this traverses the rule THREE TIMES!
-      //surely I can do this in one go.
-      function makeReduce (rule) {
-        if(u.isObject(rule) && !is$(rule) && !u.isArray(rule))
-          return u.map(rule, makeReduce)
-        return make(rule)
-      }
-
-      if(u.isObject(rule) && !is$(rule)) {
-        var rules =  u.map(rule, makeReduce)
-
-        var getPaths = []
-        var setPaths = u.paths(rules, function (maybeMap) {
-          if(u.isFunction(maybeMap) && maybeMap.length === 1) {
-            return getPaths.push(maybeMap), true
+      var gets = [], sets = []
+      var reduce = (function makeReduce (rule, path) {
+        if(u.isObject(rule) && !is$(rule)) {
+          var rules = u.map(rule, function (rule, k) {
+            return makeReduce(rule, path.concat(k))
+          })
+          return function (a, b) {
+            if(!a) a = {}
+            return u.map(rules, function (reduce, key) {
+              return a[key] = reduce.length === 1
+                  ? reduce(b) : reduce(a[key], b)
+            })
           }
-        })
-
-        var reduce = (function createReduce(rule) {
-          if(u.isObject(rule)) {
-            var rules = u.map(rule, createReduce)
-            return function (a, b) {
-              if(!a) a = {}
-              return u.map(rules, function (reduce, key) {
-                return a[key] = reduce(a[key], b)
-              })
-            }
-          }
-          else if(u.isFunction(rule)) {
-            if(rule.length === 2) return rule
-            else return function (a, b) { return rule(b) }
-          }
-          else
-            throw new Error('could not process:'+JSON.stringify(rule))
-        })(rules)
-
-        return getPaths.length
-          ? arrayGroup(setPaths, getPaths, reduce) : reduce
-      }
-      return make(rule)
+        }
+        else {
+          var fn = make(rule)
+          if(fn.length === 1) { gets.push(fn); sets.push(path.length == 1 ? path[0] : path) }
+          return fn
+        }
+      })(rule, [])
+      return gets.length
+        ? arrayGroup(sets, gets, reduce) : reduce
     }
   }
 }
+
+
+
 
