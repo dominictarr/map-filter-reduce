@@ -1,4 +1,7 @@
-var pull = require('pull-stream')
+var pull = require('pull-stream/pull')
+var pullFilter = require('pull-stream/throughs/filter')
+var pullMap = require('pull-stream/throughs/map')
+var pullReduce = require('pull-stream/sinks/reduce')
 
 var make = require('./make')
 var SinkThrough = require('pull-sink-through')
@@ -33,21 +36,22 @@ exports = module.exports = function (q, cb) {
 }
 
 exports.filter = function (q) {
-  return pull.filter(make(q))
+  return pullFilter(make(q))
 }
 
 exports.map = function (q) {
-  return pull(pull.map(make(q)),pull.filter())
+  return pull(pullMap(make(q)), pullFilter())
 }
 
 exports.reduce = function (q, cb) {
   //TODO: realtime reduce.
   if(cb)
-    return pull.reduce(make(q), null, cb)
+    return pullReduce(make(q), null, cb)
   return pull(SinkThrough(function (cb) {
-    return pull.reduce(make(q), null, cb)
-  }), pull.flatten())
+    return pullReduce(make(q), null, cb)
+  }), pullFlatten())
 }
+
 
 
 
