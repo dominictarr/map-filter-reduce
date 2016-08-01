@@ -10,7 +10,7 @@
   "dependencies": {
     "binary-search": "^1.2.0",
     "pull-sink-through": "0.0.0",
-    "pull-stream": "^3.3.0",
+    "pull-stream": "^3.4.3",
     "typewiselite": "^1.0.0"
   },
   "devDependencies": {
