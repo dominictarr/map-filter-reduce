@@ -21,6 +21,12 @@ function last (l) {
   return l[l.length - 1]
 }
 
+function passSync(fn) {
+  return function (data) {
+    return data.sync ? data : fn(data)
+  }
+}
+
 exports = module.exports = function (q, cb) {
   q = q.filter(Boolean)
   if(last(q).$reduce && cb) {
@@ -36,11 +42,11 @@ exports = module.exports = function (q, cb) {
 }
 
 exports.filter = function (q) {
-  return pullFilter(make(q))
+  return pullFilter(passSync(make(q)))
 }
 
 exports.map = function (q) {
-  return pull(pullMap(make(q)), pullFilter())
+  return pull(pullMap(passSync(make(q))), pullFilter())
 }
 
 exports.reduce = function (q, cb) {
