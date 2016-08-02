@@ -1,5 +1,6 @@
 var pull = require('pull-stream/pull')
 var pullFilter = require('pull-stream/throughs/filter')
+var pullFlatten = require('pull-stream/throughs/flatten')
 var pullMap = require('pull-stream/throughs/map')
 var pullReduce = require('pull-stream/sinks/reduce')
 
@@ -57,6 +58,7 @@ exports.reduce = function (q, cb) {
     return pullReduce(make(q), null, cb)
   }), pullFlatten())
 }
+
 
 
 
