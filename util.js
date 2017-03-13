@@ -66,7 +66,7 @@ function upper (v) {
   if(isObject(v)) {
     if(isArray(v.$prefix)) return v.$prefix.concat(exports.LO)
     if(isString(v.$prefix)) return v.$prefix+'\uffff'
-    if(has(v, '$le')) return v.$lt
+    if(has(v, '$lt')) return v.$lt
     if(has(v, '$lte')) return v.$lte
   }
   if(isArray(v)) return v.map(upper)
