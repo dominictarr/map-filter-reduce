@@ -1,5 +1,25 @@
 'use strict'
 
+//checkable types
+var types = {
+  string: true, boolean: true, array: true, undefined: true, null: true
+}
+
+var upperByType = {
+  string: [],
+  boolean: true,
+  array: undefined,
+  undefined: undefined,
+  null: null
+}
+var lowerByType = {
+  string: '',
+  boolean: false,
+  array: [],
+  undefined: undefined,
+  null: null
+}
+
 function isString(s) { return 'string' === typeof s }
 
 function isNumber(n) { return !isNaN(+n) }
@@ -8,13 +28,20 @@ var isInteger = Number.isInteger
 
 function isBoolean (b) { return 'boolean' === typeof b }
 
-function isBasic (p) { return isString(p) || isNumber(p) || isBoolean(p) }
+function isBasic (p) {
+  return isString(p) || isNumber(p) || isBoolean(p) || isNull(p) || isUndefined(p)
+}
 
 function isFunction (f) { return 'function' === typeof f }
 
 var isArray = Array.isArray
 
 function isObject (o) { return o && 'object' === typeof o && !isArray(o) }
+
+function isUndefined (u) { return u === undefined }
+function isNull (n) { return n === null }
+function isBoolean (b) { return 'boolean' === typeof b }
+function isNumber(n) { return 'number' === typeof n}
 
 // [] or {}
 function isContainer (o) {
@@ -39,7 +66,8 @@ function isLtgt (v) {
 function isRange (v) {
   if(v == null) return false
 //  if(!isObject(v)) return false
-  if(v.$prefix) return true
+  if(v.$is) console.log(v, types[v.$is], types)
+  if(v.$prefix || (v.$is && types[v.$is])) return true
   if(isArray(v)) return find(v, isRange)
   return isLtgt(v)
 }
@@ -59,9 +87,11 @@ function lower (v) {
     if(has(v, '$gte')) return v.$gte
     if(has(v, '$lt'))  return exports.LO
     if(has(v, '$lte')) return exports.LO
+    if(has(v, '$is'))  return lowerByType[v.$is]
   }
   if(isArray(v)) return v.map(lower)
 }
+
 
 function upper (v) {
   if(isBasic(v)) return v
@@ -72,6 +102,9 @@ function upper (v) {
     if(has(v, '$lte')) return v.$lte
     if(has(v, '$gt'))  return exports.HI
     if(has(v, '$gte')) return exports.HI
+
+    if(has(v, '$is'))  return upperByType[v.$is]
+
   }
   if(isArray(v)) return v.map(upper)
 }
@@ -150,6 +183,9 @@ function paths (object, test) {
 
 exports.isString    = isString
 exports.isNumber    = isNumber
+exports.isBoolean   = isBoolean
+exports.isNull      = isNull
+exports.isUndefined = isUndefined
 exports.isInteger   = isInteger
 exports.isBasic     = isBasic
 exports.isArray     = isArray
@@ -173,6 +209,7 @@ exports.lower = lower
 
 exports.HI = undefined
 exports.LO = null
+
 
 
 
