@@ -20,18 +20,27 @@ tape('u', function (t) {
 })
 
 tape('ranges', function (t) {
-  t.ok(u.isRange({$lt: 'a'}))
-  t.equal(u.upper({$lt: 'a'}), 'a')
-  t.equal(u.lower({$lt: 'a'}), null)
-  t.equal(u.upper({$lte: 'a'}), 'a')
-  t.equal(u.lower({$lte: 'a'}), null)
+  function r(range, upper, lower) {
+    t.ok(u.isRange(range), JSON.stringify(range) + ' is a range')
+    t.deepEqual(u.upper(range), upper)
+    t.deepEqual(u.lower(range), lower)
+  }
+  r({$lt:  'a'}, 'a', null)
+  r({$lte: 'a'}, 'a', null)
+  r({$gt:  'a'}, undefined, 'a')
+  r({$gte: 'a'}, undefined, 'a')
 
-  t.equal(u.upper({$gt: 'a'}), undefined)
-  t.equal(u.lower({$gt: 'a'}), 'a',)
-  t.equal(u.upper({$gte: 'a'}), undefined)
-  t.equal(u.lower({$gte: 'a'}), 'a')
+  r({$lt:  7}, 7, null)
+  r({$lte: 7}, 7, null)
+  r({$gt:  7}, undefined, 7)
+  r({$gte: 7}, undefined, 7)
+
+  r({$is: 'string'}, [], '')
+  r({$is: 'boolean'}, true, false)
+  r({$is: 'array'}, undefined, [])
+  r({$is: 'undefined'}, undefined, undefined)
+  r({$is: 'null'}, null, null)
+
   t.end()
 })
-
-
 
