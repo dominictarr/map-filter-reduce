@@ -29,7 +29,8 @@ var queries = [
   {rel: ['name', {$prefix: '@b'}]},
   {rel: {$prefix: ['contact', true]}},
   {rel: ['contact', {$is: 'boolean'}]},
-  {$is: 'boolean'}
+  {$is: 'boolean'},
+  {$is: 'string'}
 ]
 
 var expected = [
@@ -47,7 +48,8 @@ var expected = [
     {source: 'b', dest: 'a', rel: ['contact', true, false]},
     {source: 'b', dest: 'a', rel: ['contact', false, null]}
   ],
-  [true, false]
+  [true, false],
+  ['string', 'strength']
 ]
 
 tape('okay: true', function (t) {
@@ -66,6 +68,7 @@ queries.forEach(function (q, i) {
     t.end()
   })
 })
+
 
 
 
