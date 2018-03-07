@@ -19,6 +19,12 @@ tape('u', function (t) {
 
 })
 
+tape('ranges', function (t) {
+  t.ok(u.isRange({$lt: 'a'}))
+  t.equal(u.upper({$lt: 'a'}), 'a')
+  t.end()
+})
+
 
 
 
