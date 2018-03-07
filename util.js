@@ -55,8 +55,10 @@ function lower (v) {
   if(isObject(v)) {
     if(isArray(v.$prefix)) return v.$prefix.concat(exports.HI)
     if(isString(v.$prefix)) return v.$prefix
-    if(has(v, '$gt')) return v.$gt
+    if(has(v, '$gt'))  return v.$gt
     if(has(v, '$gte')) return v.$gte
+    if(has(v, '$lt'))  return exports.LO
+    if(has(v, '$lte')) return exports.LO
   }
   if(isArray(v)) return v.map(lower)
 }
@@ -66,8 +68,10 @@ function upper (v) {
   if(isObject(v)) {
     if(isArray(v.$prefix)) return v.$prefix.concat(exports.LO)
     if(isString(v.$prefix)) return v.$prefix+'\uffff'
-    if(has(v, '$lt')) return v.$lt
+    if(has(v, '$lt'))  return v.$lt
     if(has(v, '$lte')) return v.$lte
+    if(has(v, '$gt'))  return exports.HI
+    if(has(v, '$gte')) return exports.HI
   }
   if(isArray(v)) return v.map(upper)
 }
@@ -169,5 +173,6 @@ exports.lower = lower
 
 exports.HI = undefined
 exports.LO = null
+
 
 
