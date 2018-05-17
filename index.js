@@ -30,6 +30,7 @@ function passSync(fn) {
 
 exports = module.exports = function (q, cb) {
   q = q.filter(Boolean)
+  if(!q.length) return pull.through()
   if(last(q).$reduce && cb) {
     return pull.apply(null,
       q.slice(0, q.length - 1).map(get)
@@ -58,8 +59,5 @@ exports.reduce = function (q, cb) {
     return pullReduce(make(q), null, cb)
   }), pullFlatten())
 }
-
-
-
 
 
