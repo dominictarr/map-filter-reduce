@@ -100,7 +100,7 @@ the a nested name field.
 ```
 
 if the input was `{key: k, value: {foo: blah, name: 'bob'}}`
-the output would just be `'bob'`.
+the output would just be `{name: 'bob'}`.
 
 #### key: strings, numbers
 
