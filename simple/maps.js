@@ -38,6 +38,11 @@ exports.prefix = function (a, str) {
 exports.is = function (a, type) {
   return typeof a === type
 }
+
+exports.in = function (a, b) {
+  return ~b.indexOf(a)
+}
+
 exports.type = function (a) {
   return typeof a
 }

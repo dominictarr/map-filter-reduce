@@ -16,6 +16,7 @@ var data = [
   {source: 'b', dest: 'a', rel: ['name', '@alice']},
   {source: 'b', dest: 'a', rel: ['contact', true, false]},
   {source: 'b', dest: 'a', rel: ['contact', false, null]},
+  {source: 'x', dest: 'a', rel: ['age', false, null]},
   true,
   false
 ]
@@ -30,7 +31,9 @@ var queries = [
   {rel: {$prefix: ['contact', true]}},
   {rel: ['contact', {$is: 'boolean'}]},
   {$is: 'boolean'},
-  {$is: 'string'}
+  {$is: 'string'},
+  {source: {$in: ['x', 'a']}},
+  {rel: [{$in: ['name', 'age']}]}
 ]
 
 var expected = [
@@ -49,7 +52,16 @@ var expected = [
     {source: 'b', dest: 'a', rel: ['contact', false, null]}
   ],
   [true, false],
-  ['string', 'strength']
+  ['string', 'strength'],
+  [
+    {source: 'a', dest: 'b', rel: ['name', '@bob']},
+    {source: 'x', dest: 'a', rel: ['age', false, null]},
+  ],
+  [
+    {source: 'a', dest: 'b', rel: ['name', '@bob']},
+    {source: 'b', dest: 'a', rel: ['name', '@alice']},
+    {source: 'x', dest: 'a', rel: ['age', false, null]},
+  ]
 ]
 
 tape('okay: true', function (t) {
