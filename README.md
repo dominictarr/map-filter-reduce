@@ -227,6 +227,17 @@ an object.
 
 TODO: group by time ranges (day, month, week, year, etc)
 
+### sort
+
+you can also sort the output of a some paths: 
+
+``` js
+{$sort: [['foo', 'bar'], ['baz']]}
+```
+
+the output is ordered by the value at the path `foo.bar`, then if two items are equal
+at that value, then they are ordered by `baz`.
+
 ## License
 
 MIT
