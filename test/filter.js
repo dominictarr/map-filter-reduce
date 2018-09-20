@@ -82,6 +82,42 @@ queries.forEach(function (q, i) {
 })
 
 
+var mfr = require('..')
+var pull = require('pull-stream')
+queries.forEach(function (q, i) {
+  tape('test filter: '+JSON.stringify(q), function (t) {
+    pull(
+      pull.values(data),
+      mfr([{$filter: q}]),
+      pull.collect(function (err, results) {
+        t.deepEqual(results, expected[i])
+        t.end()
+      })
+    )
+  })
+})
 
-
+tape('sort', function (t) {
+  pull(
+    pull.values(data),
+    mfr([{
+      $filter: {
+        rel: ['name']
+      }}, {
+      $sort: [
+        ['rel', 0],
+        ['rel', 1],
+        ['source'],
+        ['dest']
+      ]}
+    ]),
+    pull.collect(function (err, results) {
+      t.deepEqual(results, [
+        {source: 'b', dest: 'a', rel: ['name', '@alice']},
+        {source: 'a', dest: 'b', rel: ['name', '@bob']}
+      ])
+      t.end()
+    })
+  )
+})
 

@@ -112,7 +112,3 @@ tape('first initial', function (t) {
   t.end()
 })
 
-
-
-
-
