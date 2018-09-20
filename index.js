@@ -3,6 +3,8 @@ var pullFilter = require('pull-stream/throughs/filter')
 var pullFlatten = require('pull-stream/throughs/flatten')
 var pullMap = require('pull-stream/throughs/map')
 var pullReduce = require('pull-stream/sinks/reduce')
+var pullSort = require('pull-sort')
+var CompareAt = require('compare-at-paths')
 
 var make = require('./make')
 var SinkThrough = require('pull-sink-through')
@@ -60,4 +62,7 @@ exports.reduce = function (q, cb) {
   }), pullFlatten())
 }
 
-
+exports.sort = function (paths) {
+  console.log("SORT", paths)
+  return pullSort(CompareAt(paths.$sort))
+}

@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "binary-search": "^1.2.0",
+    "compare-at-paths": "^1.0.0",
     "pull-sink-through": "0.0.0",
+    "pull-sort": "^1.0.1",
     "pull-stream": "^3.4.3",
     "typewiselite": "^1.0.0"
   },
