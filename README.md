@@ -26,8 +26,8 @@ pull(
 ```
 
 This example uses a full scan, so it looks at every object in the
-database. for a more efficient way to do the same thing,
-see [streamview-links](https://github.com/dominictarr/streamview-links)
+database. But if we have indexes, that can be made much more efficient,
+see [flumeview-query](https://github.com/flumedb/flumeview-query)
 
 ## processing streams
 
@@ -230,8 +230,4 @@ TODO: group by time ranges (day, month, week, year, etc)
 ## License
 
 MIT
-
-
-
-
 
