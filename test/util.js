@@ -44,3 +44,17 @@ tape('ranges', function (t) {
   t.end()
 })
 
+tape('!isRange', function (t) {
+  function r(not_range) {
+    t.notOk(u.isRange(not_range), JSON.stringify(not_range)+ ' is not a range')
+  }
+  r({$ne: 'foo'})
+  t.end()
+})
+tape('!isExact', function (t) {
+  function r(not_exact) {
+    t.notOk(u.isExact(not_exact), JSON.stringify(not_exact)+ ' is not exact')
+  }
+  r({$ne: 'foo'})
+  t.end()
+})
