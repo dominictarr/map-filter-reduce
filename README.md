@@ -67,6 +67,18 @@ A greater operator and a lesser operator may be combined into one comparison.
 ```
 will filter numbers from 0 up to but not including 1.
 
+#### $eq, $ne, $not, $truthy, $is, $in, $type
+
+basic operations:
+
+  * `{$eq: value}` test input is equal to value
+  * `{$ne: value}` test input is not equal to value
+  * `{$truthy: true}` test if input converts to true.
+  * `{$not: true}` test if input converts to false.
+  * `{$type: true}` returns the `typeof` the input. (useful in $map, but not $filter)
+  * `{$is: 'object'|'string'|'number'|'boolean'|'undefined'}` test if input is particular type, use instead of `$type` in filters.
+  * `{$in: [...]}` check if input is one of a set. input must be a primitive, not an object.
+
 #### objects
 
 an object is used to filter objects that have the same properties.
@@ -156,14 +168,14 @@ say, we have an object with _many_ keys, and we want to reduce that to just
 reduce is used to aggregate many values into a representative value.
 `count`, `sum`, `min`, `max`, are all reduces.
 
-#### count
+#### $count
 
 count how many items are in the input
 ``` js
 {$reduce: {$count: true}}
 ```
 
-#### sum
+#### $sum
 
 sum elements in the input. input elements must be numbers.
 sums can be applied to paths, or strings to get the values to sum.
@@ -173,7 +185,7 @@ add up all the values for `value.age`
 {$reduce: {$sum: ['value', 'age']}}
 ```
 
-#### min, max
+#### $min, $max
 
 get the minimum or maximum for a value.
 
@@ -181,7 +193,7 @@ get the minimum or maximum for a value.
 {$reduce: {$min: ['value', 'age']}}
 ```
 
-#### collect
+#### $collect
 
 get all values an put them into an array.
 
@@ -227,9 +239,9 @@ an object.
 
 TODO: group by time ranges (day, month, week, year, etc)
 
-### sort
+### $sort
 
-you can also sort the output of a some paths: 
+you can also sort the output of a some paths:
 
 ``` js
 {$sort: [['foo', 'bar'], ['baz']]}
@@ -241,4 +253,5 @@ at that value, then they are ordered by `baz`.
 ## License
 
 MIT
+
 
