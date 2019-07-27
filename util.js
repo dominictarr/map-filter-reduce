@@ -40,8 +40,6 @@ function isObject (o) { return o && 'object' === typeof o && !isArray(o) }
 
 function isUndefined (u) { return u === undefined }
 function isNull (n) { return n === null }
-function isBoolean (b) { return 'boolean' === typeof b }
-function isNumber(n) { return 'number' === typeof n}
 
 // [] or {}
 function isContainer (o) {
