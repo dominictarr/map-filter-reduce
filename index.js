@@ -63,6 +63,5 @@ exports.reduce = function (q, cb) {
 }
 
 exports.sort = function (paths) {
-  console.log("SORT", paths)
   return pullSort(CompareAt(paths.$sort))
 }
